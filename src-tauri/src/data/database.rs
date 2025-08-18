@@ -9,11 +9,11 @@ use diesel_async:: {
 use dotenvy::dotenv;
 use once_cell::sync::Lazy;
 
-/// Lazily initializes a pooled database connection
+/// Returns a connection from the database connection pool
 /// 
 /// # Usage
 /// 
-/// '''
+/// ```rust
 /// // Create a database connection
 /// let conn = connect_from_pool().await;
 /// // Handle errors(if any)
@@ -31,10 +31,11 @@ use once_cell::sync::Lazy;
 ///     Ok(value) => value,
 ///     Err(e) => panic!("Failed to fetch results: {e}"),
 /// };
-/// '''
+/// ```
 pub async fn connect_from_pool() -> Result<Object<SyncConnectionWrapper<SqliteConnection>>, PoolError> {
     return DB_POOL.get().await;
 }
+/// Lazily initializes a database connection pool
 static DB_POOL: Lazy<Pool<SyncConnectionWrapper<SqliteConnection>>> = Lazy::new(|| {
     dotenv().ok();
 
