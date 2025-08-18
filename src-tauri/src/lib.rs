@@ -1,6 +1,17 @@
 pub mod data;
 pub mod handlers;
 
+#[cfg(test)]
+mod tests {
+    #[tokio::test]
+    async fn test_sqlite_connection(){
+        use crate::data::database;
+        let _conn = database::connect_from_pool().await;
+
+        assert!(_conn.is_ok());
+    }
+}
+
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
