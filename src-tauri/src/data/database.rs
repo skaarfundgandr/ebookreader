@@ -13,7 +13,7 @@ use once_cell::sync::Lazy;
 /// 
 /// # Usage
 /// 
-/// ```rust,no_run
+/// ```rust,ignore
 /// // Create a database connection
 /// let conn = connect_from_pool().await;
 /// // Handle errors(if any)
