@@ -10,6 +10,15 @@ mod tests {
 
         assert!(_conn.is_ok());
     }
+
+    #[tokio::test]
+    async fn test_configuration_repo() {
+        use crate::data::repos::configuration_repo::get_all_configuration;
+
+        let configurations = get_all_configuration().await;
+
+        assert!(!configurations.is_err());
+    }
 }
 
 
