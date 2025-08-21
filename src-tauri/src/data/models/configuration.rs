@@ -9,3 +9,17 @@ pub struct Configuration {
     pub configuration_id: i32,
     pub book_path: Option<String>
 }
+
+#[derive(Debug, Insertable)]
+#[diesel(table_name = configuration)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+pub struct NewConfiguration<'a> {
+    pub book_path: Option<&'a str>
+}
+
+#[derive(Debug, AsChangeset)]
+#[diesel(table_name = configuration)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+pub struct ConfigurationForm<'a> {
+    pub book_path: Option<&'a str>
+}

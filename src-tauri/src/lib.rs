@@ -13,9 +13,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_configuration_repo() {
-        use crate::data::repos::configuration_repo::get_all_configuration;
+        use crate::data::repos::configuration_repo::get_all_configurations;
 
-        let configurations = get_all_configuration().await;
+        let configurations = get_all_configurations().await;
 
         assert!(!configurations.is_err());
     }
