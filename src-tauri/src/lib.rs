@@ -1,6 +1,9 @@
 pub mod data;
 pub mod handlers;
 pub mod commands;
+pub mod utils;
+pub mod controllers;
+
 #[cfg(test)]
 mod tests {
     #[tokio::test]
