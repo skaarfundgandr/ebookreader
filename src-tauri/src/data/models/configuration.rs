@@ -10,14 +10,7 @@ pub struct Configuration {
     pub book_path: Option<String>
 }
 
-#[derive(Debug, Insertable)]
-#[diesel(table_name = configuration)]
-#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
-pub struct NewConfiguration<'a> {
-    pub book_path: Option<&'a str>
-}
-
-#[derive(Debug, AsChangeset)]
+#[derive(Debug, AsChangeset, Insertable)]
 #[diesel(table_name = configuration)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct ConfigurationForm<'a> {
