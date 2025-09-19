@@ -1,13 +1,13 @@
+pub mod commands;
+pub mod controllers;
 pub mod data;
 pub mod handlers;
-pub mod commands;
 pub mod utils;
-pub mod controllers;
 
 #[cfg(test)]
 mod tests {
     #[tokio::test]
-    async fn test_sqlite_connection(){
+    async fn test_sqlite_connection() {
         use crate::data::database;
         let _conn = database::connect_from_pool().await;
 
@@ -24,6 +24,3 @@ mod tests {
         assert!(!configurations.is_err());
     }
 }
-
-
-

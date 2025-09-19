@@ -1,5 +1,5 @@
-use diesel::prelude::*;
 use crate::data::models::schema::*;
+use diesel::prelude::*;
 
 #[derive(Queryable, Selectable, Identifiable, PartialEq, Debug)]
 #[diesel(table_name = configuration)]
@@ -7,12 +7,12 @@ use crate::data::models::schema::*;
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct Configuration {
     pub configuration_id: i32,
-    pub book_path: Option<String>
+    pub book_path: Option<String>,
 }
 
 #[derive(Debug, AsChangeset, Insertable)]
 #[diesel(table_name = configuration)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct ConfigurationForm<'a> {
-    pub book_path: Option<&'a str>
+    pub book_path: Option<&'a str>,
 }
