@@ -1,8 +1,29 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use ebookreader_lib::commands::sample;
+use std::net::SocketAddr;
 
-fn main() {
+use axum::routing::{get, post};
+use axum::Router;
+use ebookreader_lib::commands::sample;
+use ebookreader_lib::controllers::user_controller;
+use tokio::net::TcpListener;
+
+#[tokio::main]
+async fn main() {
+    let api: Router<()> = Router::new()
+        .route("/", get(|| async { "Hello, World!" }))
+        .route("/create_user", post(user_controller::create_user))
+        .route("/list_users", get(user_controller::list_users))
+        .with_state(());
+
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+
+    tokio::spawn(async move {
+        axum::serve(TcpListener::bind(addr).await.unwrap(), api)
+            .await
+            .unwrap();
+    });
+
     sample::run();
 }
