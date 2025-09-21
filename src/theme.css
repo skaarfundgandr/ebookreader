@@ -1,0 +1,18 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
+@theme {
+  --font-roboto: "Roboto", sans-serif; 
+}
+:root {
+  --color-primary: #fc6551;  /* blue */
+  --color-secondary: #f59e0b; /* amber */
+  --color-bg: #fff3f3;        /* white background */
+  --color-text: #111827;      /* dark gray text */
+  --color-header: #fffefe;
+}
+
+[data-theme="dark"] {
+  --color-primary: #2563eb;   /* darker blue */
+  --color-secondary: #d97706; /* darker amber */
+  --color-bg: #1e293b;        /* dark background */
+  --color-text: #f9fafb;      /* light text */
+}
