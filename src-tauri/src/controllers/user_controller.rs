@@ -6,34 +6,60 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 
+use crate::data::models::users::NewUser;
+
 #[derive(Serialize, Deserialize)]
 pub struct User {
-    pub username: String,
-    pub email: String,
-    pub password_hash: String,
-    pub created_at: Option<String>,
+    username: String,
+    email: String,
+    password_hash: String,
+    created_at: Option<String>,
 }
-// TODO implement actual user creation in database
-pub async fn create_user() -> impl IntoResponse {
-    Response::builder()
+
+pub async fn create_user(Json(user): Json<User>) -> impl IntoResponse {
+    let new_user = NewUser {
+        username: &user.username,
+        email: &user.email,
+        password_hash: &user.password_hash,
+        created_at: user.created_at.as_deref(),
+    };
+
+    match crate::data::repos::user_repo::create_user(new_user).await {
+        Ok(_) => (),
+        Err(e) => {
+            eprintln!("Error creating user: {}", e);
+            return Response::builder()
+                .status(StatusCode::INTERNAL_SERVER_ERROR)
+                .body(Body::from("Failed to create user"))
+                .unwrap();
+        }
+    }
+
+    return Response::builder()
         .status(StatusCode::CREATED)
         .body(Body::from("User created"))
-        .unwrap()
+        .unwrap();
 }
-// TODO implement actual user listing from database
+
 pub async fn list_users() -> Json<Vec<User>> {
-    Json(vec![
-        User {
-            username: "user1".into(),
-            email: "user1@example.com".into(),
-            password_hash: "hashed_password1".into(),
-            created_at: Some("2023-01-01T00:00:00Z".into()),
-        },
-        User {
-            username: "user2".into(),
-            email: "user2@example.com".into(),
-            password_hash: "hashed_password2".into(),
-            created_at: Some("2023-01-02T00:00:00Z".into()),
-        },
-    ])
+    let users = match crate::data::repos::user_repo::get_all_users().await {
+        Ok(Some(user_list)) => user_list
+            .into_iter()
+            .map(|u| User {
+                username: u.username,
+                email: u.email,
+                password_hash: u.password_hash,
+                created_at: Some(u.created_at),
+            })
+            .collect(),
+        Ok(None) => vec![],
+        Err(e) => {
+            eprintln!("Error fetching users: {}", e);
+            vec![]
+        }
+    };
+
+    return Json(users);
 }
+// TODO: Add more user-related handlers (e.g., get_user, update_user, delete_user)
+// and implement authentication and authorization as needed.

@@ -20,5 +20,5 @@ pub struct NewUser<'a> {
     pub username: &'a str,
     pub email: &'a str,
     pub password_hash: &'a str,
-    pub created_at: &'a str,
+    pub created_at: Option<&'a str>,
 }

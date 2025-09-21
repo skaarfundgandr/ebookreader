@@ -17,12 +17,15 @@ async fn main() {
         .route("/list_users", get(user_controller::list_users))
         .with_state(());
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-
     tokio::spawn(async move {
-        axum::serve(TcpListener::bind(addr).await.unwrap(), api)
-            .await
-            .unwrap();
+        let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+
+        println!("Starting server on {}", addr);
+
+        match axum::serve(TcpListener::bind(addr).await.unwrap(), api).await {
+            Ok(_) => (),
+            Err(e) => eprintln!("Error starting server: {}", e),
+        }
     });
 
     sample::run();
