@@ -74,7 +74,7 @@ pub async fn set_book_path(new_path: &str) -> Result<(), Error> {
         .transaction(|connection| {
             async move {
                 diesel::insert_into(configuration)
-                    .values(&new_config)
+                    .values((configuration_id.eq(1), &new_config))
                     .on_conflict(configuration_id)
                     .do_update()
                     .set(&new_config)
