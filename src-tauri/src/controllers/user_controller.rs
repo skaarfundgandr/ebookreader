@@ -1,5 +1,6 @@
 use axum::{
     body::Body,
+    extract::Query,
     http::StatusCode,
     response::{IntoResponse, Response},
     Json,
@@ -61,5 +62,47 @@ pub async fn list_users() -> Json<Vec<User>> {
 
     return Json(users);
 }
-// TODO: Add more user-related handlers (e.g., get_user, update_user, delete_user)
-// and implement authentication and authorization as needed.
+
+pub async fn get_user(Query(params): Query<std::collections::HashMap<String, String>>) -> impl IntoResponse {
+    // Extract user_id from query params
+    let user_id = match params.get("user_id").and_then(|id| id.parse::<i32>().ok()) {
+        Some(id) => id,
+        None => {
+            return Response::builder()
+                .status(StatusCode::BAD_REQUEST)
+                .header("Content-Type", "application/json")
+                .body(Body::from(r#"{"error":"Missing or invalid user id"}"#))
+                .unwrap();
+        }
+    };
+    
+    return match crate::data::repos::user_repo::get_user_by_id(user_id).await {
+        Ok(Some(user)) => {
+            let user_response = User {
+                username: user.username,
+                email: user.email,
+                password_hash: user.password_hash,
+                created_at: Some(user.created_at),
+            };
+            Response::builder()
+                .status(StatusCode::OK)
+                .header("Content-Type", "application/json")
+                .body(Body::from(serde_json::to_string(&user_response).unwrap()))
+                .unwrap()
+        }
+        Ok(None) => Response::builder()
+            .status(StatusCode::NOT_FOUND)
+            .header("Content-Type", "application/json")
+            .body(Body::from(r#"{"error":"User not found"}"#))
+            .unwrap(),
+        Err(e) => {
+            eprintln!("Error fetching user: {}", e);
+            Response::builder()
+                .status(StatusCode::INTERNAL_SERVER_ERROR)
+                .header("Content-Type", "application/json")
+                .body(Body::from(r#"{"error":"Failed to fetch user"}"#))
+                .unwrap()
+        }
+    };
+}
+// TODO: Add update_user and delete_user handlers and add authentication/authorization
