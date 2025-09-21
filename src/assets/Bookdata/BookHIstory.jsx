@@ -1,8 +1,8 @@
 import React from "react";
 import HistoryCard from "./HistoryCard";
 import BookStackImg from "../../images/bookstack.png";
-import BookAuthor from "../../images/bookauthor.png";
-import Reading from "../../images/reading.png";
+import BookAuthor from "../../images/bookAuthor.png";
+import Reading from "../../images/Reading.png";
 
 export default function BookHistory() {
   return (
