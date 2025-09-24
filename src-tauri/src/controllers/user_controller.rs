@@ -63,7 +63,9 @@ pub async fn list_users() -> Json<Vec<User>> {
     return Json(users);
 }
 
-pub async fn get_user(Query(params): Query<std::collections::HashMap<String, String>>) -> impl IntoResponse {
+pub async fn get_user(
+    Query(params): Query<std::collections::HashMap<String, String>>,
+) -> impl IntoResponse {
     // Extract user_id from query params
     let user_id = match params.get("user_id").and_then(|id| id.parse::<i32>().ok()) {
         Some(id) => id,
@@ -75,7 +77,7 @@ pub async fn get_user(Query(params): Query<std::collections::HashMap<String, Str
                 .unwrap();
         }
     };
-    
+
     return match crate::data::repos::user_repo::get_user_by_id(user_id).await {
         Ok(Some(user)) => {
             let user_response = User {

@@ -7,7 +7,7 @@ use diesel_async::RunQueryDsl;
 use crate::data::database::*;
 use crate::data::models::users::NewUser;
 use crate::data::models::users::Users;
-
+//TODO: Acquire mutex lock when adding entry to the database
 pub async fn get_all_users() -> Result<Option<Vec<Users>>, Error> {
     use crate::data::models::schema::users::dsl::*;
 
@@ -68,7 +68,7 @@ pub async fn get_user_by_username(user_name: &str) -> Result<Option<Users>, Erro
         Err(e) => Err(e),
     };
 }
-
+// TODO: Acquire mutex lock when adding entry to the database
 pub async fn create_user(new_user: NewUser<'_>) -> Result<(), Error> {
     use crate::data::models::schema::users::dsl::*;
 
