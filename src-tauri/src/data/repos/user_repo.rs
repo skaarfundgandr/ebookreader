@@ -3,6 +3,7 @@ use diesel::result::*;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::AsyncConnection;
 use diesel_async::RunQueryDsl;
+use tokio::sync::MutexGuard;
 
 use crate::data::database::*;
 use crate::data::models::users::NewUser;
@@ -79,7 +80,10 @@ pub async fn create_user(new_user: NewUser<'_>) -> Result<(), Error> {
         )
     })?;
 
-    return match conn
+    let db_lock = lock_db();
+    let _guard: MutexGuard<()> = db_lock.lock().await;
+
+    let result = match conn
         .transaction(|connection| {
             async move {
                 diesel::insert_into(users)
@@ -87,6 +91,8 @@ pub async fn create_user(new_user: NewUser<'_>) -> Result<(), Error> {
                     .execute(connection)
                     .await?;
 
+                drop(_guard); // Release mutex lock
+                
                 Ok(())
             }
             .scope_boxed()
@@ -96,4 +102,6 @@ pub async fn create_user(new_user: NewUser<'_>) -> Result<(), Error> {
         Ok(_) => Ok(()),
         Err(e) => Err(e),
     };
+
+    return result;
 }

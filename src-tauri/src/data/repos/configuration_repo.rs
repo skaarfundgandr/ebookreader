@@ -70,7 +70,10 @@ pub async fn set_book_path(new_path: &str) -> Result<(), Error> {
         }
     };
 
-    return match conn
+    let db_lock = lock_db();
+    let _guard = db_lock.lock().await;
+
+    let result = match conn
         .transaction(|connection| {
             async move {
                 diesel::insert_into(configuration)
@@ -90,4 +93,8 @@ pub async fn set_book_path(new_path: &str) -> Result<(), Error> {
         Ok(value) => Ok(value),
         Err(e) => Err(e),
     };
+
+    drop(_guard); // Release mutex lock
+
+    return result;
 }

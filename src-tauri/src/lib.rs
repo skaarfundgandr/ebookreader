@@ -7,6 +7,7 @@ pub mod utils;
 #[cfg(test)]
 mod connection_tests {
     #[tokio::test]
+    #[serial_test::serial]
     async fn test_sqlite_connection() {
         use crate::data::database;
         let _conn = database::connect_from_pool().await;
@@ -119,7 +120,6 @@ mod user_repo_tests {
     use chrono::Utc;
     use diesel::result::Error;
     use diesel_async::RunQueryDsl;
-    use serial_test::serial;
 
     use crate::data::database;
     use crate::data::models::users::NewUser;
@@ -157,7 +157,7 @@ mod user_repo_tests {
     }
 
     #[tokio::test]
-    #[serial]
+    #[serial_test::serial]
     async fn test_create_user() {
         // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
@@ -182,7 +182,7 @@ mod user_repo_tests {
     }
 
     #[tokio::test]
-    #[serial]
+    #[serial_test::serial]
     async fn test_get_all_users_empty() {
         // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
@@ -196,7 +196,7 @@ mod user_repo_tests {
     }
 
     #[tokio::test]
-    #[serial]
+    #[serial_test::serial]
     async fn test_get_user_by_id() {
         // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
@@ -226,7 +226,7 @@ mod user_repo_tests {
     }
 
     #[tokio::test]
-    #[serial]
+    #[serial_test::serial]
     async fn test_get_user_by_id_nonexistent() {
         // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
@@ -240,7 +240,7 @@ mod user_repo_tests {
     }
 
     #[tokio::test]
-    #[serial]
+    #[serial_test::serial]
     async fn test_get_user_by_username() {
         // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
@@ -266,7 +266,7 @@ mod user_repo_tests {
     }
 
     #[tokio::test]
-    #[serial]
+    #[serial_test::serial]
     async fn test_get_user_by_username_nonexistent() {
         // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
@@ -280,7 +280,7 @@ mod user_repo_tests {
     }
 
     #[tokio::test]
-    #[serial]
+    #[serial_test::serial]
     async fn test_get_all_users_multiple() {
         // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
