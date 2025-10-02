@@ -8,6 +8,7 @@ use axum::{
 use serde::{Deserialize, Serialize};
 
 use crate::data::models::users::NewUser;
+use crate::data::repos::user_repo;
 
 #[derive(Serialize, Deserialize)]
 pub struct User {
@@ -25,7 +26,7 @@ pub async fn create_user(Json(user): Json<User>) -> impl IntoResponse {
         created_at: user.created_at.as_deref(),
     };
 
-    match crate::data::repos::user_repo::create_user(new_user).await {
+    match user_repo::create_user(new_user).await {
         Ok(_) => (),
         Err(e) => {
             eprintln!("Error creating user: {}", e);
@@ -43,7 +44,7 @@ pub async fn create_user(Json(user): Json<User>) -> impl IntoResponse {
 }
 
 pub async fn list_users() -> Json<Vec<User>> {
-    let users = match crate::data::repos::user_repo::get_all_users().await {
+    let users = match user_repo::get_all_users().await {
         Ok(Some(user_list)) => user_list
             .into_iter()
             .map(|u| User {
@@ -78,7 +79,7 @@ pub async fn get_user(
         }
     };
 
-    return match crate::data::repos::user_repo::get_user_by_id(user_id).await {
+    return match user_repo::get_user_by_id(user_id).await {
         Ok(Some(user)) => {
             let user_response = User {
                 username: user.username,
