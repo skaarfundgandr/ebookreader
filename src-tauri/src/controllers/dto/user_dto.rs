@@ -23,8 +23,8 @@ impl NewUserDTO<'_> {
     }
 }
 
-impl From<NewUserDTO> for UserDTO {
-    fn from(user: NewUserDTO) -> Self {
+impl From<NewUserDTO<'_>> for UserDTO {
+    fn from(user: NewUserDTO<'_>) -> Self {
         UserDTO {
             username: user.username.to_string(),
             email: user.email.to_string(),
