@@ -7,9 +7,9 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::data::models::users::NewUser;
+use crate::controllers::dto::user_dto::NewUserDTO;
 use crate::data::repos::user_repo;
-
+// TODO: Avoid using this struct
 #[derive(Serialize, Deserialize)]
 pub struct User {
     username: String,
@@ -17,13 +17,13 @@ pub struct User {
     password_hash: String,
     created_at: Option<String>,
 }
-
+// TODO: Endpoints should return UserDTO instead of User
 pub async fn create_user(Json(user): Json<User>) -> impl IntoResponse {
-    let new_user = NewUser {
+    let new_user = NewUserDTO {
         username: &user.username,
         email: &user.email,
         password_hash: &user.password_hash,
-        created_at: user.created_at.as_deref(),
+        created_at: None,
     };
 
     match user_repo::create_user(new_user).await {
@@ -51,7 +51,7 @@ pub async fn list_users() -> Json<Vec<User>> {
                 username: u.username,
                 email: u.email,
                 password_hash: u.password_hash,
-                created_at: Some(u.created_at),
+                created_at: u.created_at,
             })
             .collect(),
         Ok(None) => vec![],
@@ -85,7 +85,7 @@ pub async fn get_user(
                 username: user.username,
                 email: user.email,
                 password_hash: user.password_hash,
-                created_at: Some(user.created_at),
+                created_at: user.created_at,
             };
             Response::builder()
                 .status(StatusCode::OK)

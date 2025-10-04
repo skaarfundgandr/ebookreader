@@ -5,10 +5,11 @@ use diesel_async::AsyncConnection;
 use diesel_async::RunQueryDsl;
 use tokio::sync::MutexGuard;
 
+use crate::controllers::dto::user_dto::NewUserDTO;
 use crate::data::database::*;
 use crate::data::models::users::NewUser;
 use crate::data::models::users::Users;
-//TODO: Acquire mutex lock when adding entry to the database
+
 pub async fn get_all_users() -> Result<Option<Vec<Users>>, Error> {
     use crate::data::models::schema::users::dsl::*;
 
@@ -19,7 +20,7 @@ pub async fn get_all_users() -> Result<Option<Vec<Users>>, Error> {
         )
     })?;
 
-    return match users.select(Users::as_select()).load(&mut conn).await {
+    return match users.load::<Users>(&mut conn).await {
         Ok(value) => Ok(Some(value)),
         Err(Error::NotFound) => Ok(None),
         Err(e) => Err(e),
@@ -38,8 +39,7 @@ pub async fn get_user_by_id(id: i32) -> Result<Option<Users>, Error> {
 
     return match users
         .filter(user::user_id.eq(id))
-        .select(Users::as_select())
-        .first(&mut conn)
+        .first::<Users>(&mut conn)
         .await
     {
         Ok(value) => Ok(Some(value)),
@@ -60,8 +60,7 @@ pub async fn get_user_by_username(user_name: &str) -> Result<Option<Users>, Erro
 
     return match users
         .filter(username.eq(user_name))
-        .select(Users::as_select())
-        .first(&mut conn)
+        .first::<Users>(&mut conn)
         .await
     {
         Ok(value) => Ok(Some(value)),
@@ -69,8 +68,8 @@ pub async fn get_user_by_username(user_name: &str) -> Result<Option<Users>, Erro
         Err(e) => Err(e),
     };
 }
-// TODO: Acquire mutex lock when adding entry to the database
-pub async fn create_user(new_user: NewUser<'_>) -> Result<(), Error> {
+// TODO: Use DTOs
+pub async fn create_user(new_user_dto: NewUserDTO<'_>) -> Result<(), Error> {
     use crate::data::models::schema::users::dsl::*;
 
     let mut conn = connect_from_pool().await.map_err(|e| {
@@ -82,6 +81,13 @@ pub async fn create_user(new_user: NewUser<'_>) -> Result<(), Error> {
 
     let db_lock = lock_db();
     let _guard: MutexGuard<()> = db_lock.lock().await;
+
+    let new_user = NewUser {
+        username: new_user_dto.username,
+        email: new_user_dto.email,
+        password_hash: new_user_dto.password_hash,
+        created_at: None,
+    };
 
     let result = match conn
         .transaction(|connection| {
