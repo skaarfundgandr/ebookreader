@@ -84,7 +84,7 @@ pub async fn set_book_path(new_path: &str) -> Result<(), Error> {
                     .execute(connection)
                     .await?;
 
-                Ok(())
+                    Ok(())
             }
             .scope_boxed()
         })
@@ -93,8 +93,6 @@ pub async fn set_book_path(new_path: &str) -> Result<(), Error> {
         Ok(value) => Ok(value),
         Err(e) => Err(e),
     };
-
-    drop(_guard); // Release mutex lock
 
     return result;
 }

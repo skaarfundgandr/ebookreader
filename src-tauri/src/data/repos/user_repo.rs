@@ -90,9 +90,7 @@ pub async fn create_user(new_user: NewUser<'_>) -> Result<(), Error> {
                     .values(new_user)
                     .execute(connection)
                     .await?;
-
-                drop(_guard); // Release mutex lock
-                
+                                
                 Ok(())
             }
             .scope_boxed()

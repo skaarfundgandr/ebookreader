@@ -1,4 +1,4 @@
-use std::{env, sync::Arc};
+use std::{env, sync::{atomic::{AtomicBool, Ordering}, Arc}};
 
 use diesel::SqliteConnection;
 use diesel_async::{
@@ -50,22 +50,30 @@ static DB_POOL: Lazy<Pool<SyncConnectionWrapper<SqliteConnection>>> = Lazy::new(
 
     Pool::builder(config)
         .post_create(Hook::async_fn(|conn: &mut SyncConnectionWrapper<SqliteConnection>, _meta| Box::pin(async move {
-            conn.batch_execute(
+            if !PRAGMAS_SET.load(Ordering::Relaxed) {
+                let result = conn.batch_execute(
                 "
                 PRAGMA foreign_keys = ON;
                 PRAGMA journal_mode = WAL;
                 PRAGMA synchronous = NORMAL;
-                PRAGMA temp_store = MEMORY;
                 PRAGMA mmap_size = 30000000000;
-                PRAGMA busy_timeout = 5000;
                 ",
-            )
-            .await
-            .map_err(|e| HookError::Message(format!("Failed to set SQLite pragmas: {e}").into()))
+                )
+                .await;
+                if let Ok(_) = result {
+                    PRAGMAS_SET.store(true, Ordering::Relaxed);
+                }
+
+                result.map_err(|e| HookError::Message(format!("Failed to set SQLite pragmas: {e}").into()))
+            } else {
+                Ok(())
+            }
         })))
         .build()
         .expect("Failed to create SQLite connection pool")
 });
+
+static PRAGMAS_SET: AtomicBool = AtomicBool::new(false);
 
 pub fn lock_db() -> Arc<Mutex<()>> {
     return DB_LOCK.clone();

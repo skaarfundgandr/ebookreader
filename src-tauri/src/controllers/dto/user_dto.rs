@@ -1,11 +1,13 @@
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+use serde::{Serialize, Deserialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserDTO {
     pub username: String,
     pub email: String,
     pub created_at: String,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NewUserDTO<'a> {
     pub username: &'a str,
     pub email: &'a str,
