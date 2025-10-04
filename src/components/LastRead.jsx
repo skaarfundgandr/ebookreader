@@ -3,40 +3,78 @@ import ebookCover from '../images/bookCover.png';
 
 export default function LastRead() {
   return (
-    <div className="[grid-area: last] p-8 flex justify-center items-center h-100">
-        
-      {/* Outer card container */}
-      <div className="w-full h-full flex items-center justify-center rounded-xl shadow-lg bg-[var(--color-primary)] text-white">
-        
-        {/* Book cover */}
-        <div className="flex justify-start">
-          <img 
-            src={ebookCover} 
-            alt="Book cover" 
-            className="h-60 w-35 ml-4 rounded-lg shadow-lg object-cover" 
+    <div className="[grid-area: last] p-4 sm:p-6 lg:p-8 flex justify-center items-center h-full">
+      {/* Outer Card */}
+      <div
+        className="
+          w-full h-auto 
+          flex flex-col sm:flex-row 
+          items-center sm:items-start justify-center 
+          rounded-xl shadow-lg 
+          bg-[var(--color-primary)] text-white 
+          p-5
+          transition-all duration-300
+        "
+      >
+        {/* Book Cover */}
+        <div className="flex justify-center sm:justify-start mb-4 sm:mb-0">
+          <img
+            src={ebookCover}
+            alt="Book cover"
+            className="
+              h-40 w-28
+              sm:h-48 sm:w-32
+              md:h-56 md:w-36
+              lg:h-64 lg:w-44
+              rounded-lg shadow-md object-cover
+              transition-transform duration-300 hover:scale-105
+            "
           />
         </div>
 
-        {/* Book details + actions */}
-        <div className="flex flex-col gap-2 ml-4 pr-9 justify-center text-left text-md">
-          
-          {/* Title / question */}
-          <h1 className="text-center">
-            Did you read <b>The Lost World</b> by Arthur Conan Doyle?
+        {/* Book Details */}
+        <div
+          className="
+            flex flex-col 
+            gap-2 sm:gap-3 md:gap-4 
+            sm:ml-4 md:ml-6 
+            text-center sm:text-left 
+            w-full sm:w-auto
+          "
+        >
+          {/* Title */}
+          <h1
+            className="
+              text-sm sm:text-base md:text-lg lg:text-xl 
+              leading-snug font-medium
+            "
+          >
+            Did you read{" "}
+            <b className="whitespace-nowrap">The Lost World</b> by Arthur Conan Doyle?
           </h1>
 
-          {/* Static star rating (passed via prop) */}
-          <StarRate rating={4} />
+          {/* Rating */}
+          <div className="flex justify-center sm:justify-start">
+            <StarRate rating={4} />
+          </div>
 
-          {/* Call-to-action button */}
-          <button 
-            className="bg-gray-500 flex items-center justify-center h-[40px] 
-                       ml-20 mr-20 mt-4 text-white text-base rounded-full 
-                       shadow-lg shadow-black/50 shadow-[8px_0px_10px_rgba(0,0,0,0.5)]
-                       hover:bg-gray-600 transition-colors"
-          >
-            READ TODAY
-          </button>
+          {/* CTA Button */}
+          <div className="flex justify-center sm:justify-start mt-3 sm:mt-4">
+            <button
+              className="
+                bg-gray-500 hover:bg-gray-600 
+                flex items-center justify-center 
+                h-9 sm:h-10 md:h-11 
+                px-5 sm:px-8 md:px-10 
+                text-xs sm:text-sm md:text-base 
+                rounded-full shadow-md shadow-black/40
+                w-full sm:w-auto max-w-[200px]
+                transition-colors
+              "
+            >
+              READ TODAY
+            </button>
+          </div>
         </div>
       </div>
     </div>

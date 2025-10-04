@@ -9,17 +9,26 @@ export default function Sidebar({ isExpanded, setIsExpanded }) {
   return (
     <div
       className="
-        [grid-area:sidebar] bg-[var(--color-primary)] text-white h-full p-4
-        flex flex-col justify-between transition-all duration-300
+        sticky top-0 self-start
+        [grid-area:sidebar] bg-[var(--color-primary)] text-white
+        h-screen p-4 flex flex-col justify-between
+        transition-all duration-300
       "
     >
       {/* Top Logo */}
-      <div className="flex items-center gap-4 pt-4">
+      <div
+        className={`
+          flex items-center pt-4 transition-all duration-300
+          ${isExpanded ? "justify-start" : "justify-center"}
+        `}
+      >
         <IoBook size={40} />
         <span
           className={`
             text-lg font-bold whitespace-nowrap overflow-hidden transition-all duration-300
-            ${isExpanded ? "opacity-100 max-w-[200px]" : "opacity-0 max-w-0"}
+            ${isExpanded 
+              ? "opacity-100 max-w-[200px] ml-4" 
+              : "opacity-0 max-w-0 ml-0"}
           `}
         >
           My Library
@@ -27,38 +36,58 @@ export default function Sidebar({ isExpanded, setIsExpanded }) {
       </div>
 
       {/* Navigation */}
-      <div className="flex flex-col gap-5 items-start justify-center mt-10">
-        <div className="flex items-center gap-3">
-          <IoHomeOutline size={25} />
-          {isExpanded && <span>Home</span>}
-        </div>
-        <div className="flex items-center gap-3">
-          <MdDashboardCustomize size={25} />
-          {isExpanded && <span>Dashboard</span>}
-        </div>
-        <div className="flex items-center gap-3">
-          <IoSettingsOutline size={25} />
-          {isExpanded && <span>Settings</span>}
-        </div>
-        <div className="flex items-center gap-3">
-          <HiMiniQuestionMarkCircle size={25} />
-          {isExpanded && <span>Help</span>}
-        </div>
+      <div className="flex flex-col mt-10 gap-5">
+        {[
+          { icon: <IoHomeOutline size={25} />, label: "Home" },
+          { icon: <MdDashboardCustomize size={25} />, label: "Dashboard" },
+          { icon: <IoSettingsOutline size={25} />, label: "Settings" },
+          { icon: <HiMiniQuestionMarkCircle size={25} />, label: "Help" },
+        ].map(({ icon, label }, i) => (
+          <div
+            key={i}
+            className={`
+              flex items-center transition-all duration-300
+              ${isExpanded ? "justify-start" : "justify-center"}
+            `}
+          >
+            <div className="flex items-center">
+              {icon}
+              <span
+                className={`
+                  whitespace-nowrap overflow-hidden transition-all duration-300
+                  ${isExpanded 
+                    ? "opacity-100 max-w-[150px] ml-3" 
+                    : "opacity-0 max-w-0 ml-0"}
+                `}
+              >
+                {label}
+              </span>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Expand / Collapse Button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 mb-6 p-2 rounded-md hover:bg-white/20 transition"
+        className={`
+          flex items-center mb-6 p-2 rounded-md hover:bg-white/20 transition-all duration-300
+          ${isExpanded ? "justify-start" : "justify-center"}
+        `}
       >
-        {isExpanded ? (
-          <>
-            <RiExpandLeftLine size={25} />
-            <span>Collapse</span>
-          </>
-        ) : (
-          <RiExpandRightLine size={25} />
-        )}
+        <div className="flex items-center">
+          {isExpanded ? <RiExpandLeftLine size={25} /> : <RiExpandRightLine size={25} />}
+          <span
+            className={`
+              whitespace-nowrap overflow-hidden transition-all duration-300
+              ${isExpanded 
+                ? "opacity-100 max-w-[120px] ml-2" 
+                : "opacity-0 max-w-0 ml-0"}
+            `}
+          >
+            Collapse
+          </span>
+        </div>
       </button>
     </div>
   );

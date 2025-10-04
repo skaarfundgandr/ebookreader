@@ -41,7 +41,7 @@ export default function QuoteGenerator() {
       <div
         className="w-full 
                   max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-5xl 
-                  min-h-[180px] sm:min-h-[200px] md:min-h-[220px] lg:min-h-[250px] 
+                  min-h-[180px] sm:min-h-[200px] md:min-h-[220px] lg:min-h-full 
                   text-gray-800 flex flex-col items-center justify-center 
                   rounded-xl shadow-lg 
                   p-3 sm:p-4 md:p-6 lg:p-8 

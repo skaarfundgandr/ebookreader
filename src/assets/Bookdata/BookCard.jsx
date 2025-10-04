@@ -1,30 +1,41 @@
+import { useState } from "react";
+
 export default function BookCard({ title, author, coverImage }) {
+  const [imageError, setImageError] = useState(false);
+  const hasImage = Boolean(coverImage) && !imageError;
+
   return (
     <div
-      className="
-        w-32 sm:w-32 md:w-36 lg:w-40 
+      className={`
+        w-24 sm:w-28 md:w-32 lg:w-34 xl:w-38
         flex flex-col 
         shadow-md rounded-lg overflow-hidden
         hover:shadow-lg transition
-      "
+      `}
     >
-      {/* Cover area fixed height/aspect */}
-      <div className="aspect-[3/4] bg-gray-200 flex items-center justify-center overflow-hidden">
-        {coverImage ? (
+      {hasImage ? (
+        <div className="aspect-[3/4] bg-gray-200 flex items-center justify-center overflow-hidden">
           <img
             src={coverImage}
             alt={title}
             className="w-full h-full object-cover"
+            onError={() => setImageError(true)}
           />
-        ) : (
-          <span className="text-gray-400 text-xs">No cover</span>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="aspect-[3/4] flex flex-col justify-center items-center bg-gray-300">
+          <span className="text-black text-sm text-center">{title}</span>
+        </div>
+      )}
 
       {/* Details */}
       <div className="bg-white p-2 text-center">
-        <h3 className="text-sm sm:text-base font-bold truncate">{title}</h3>
-        <p className="text-xs sm:text-sm text-gray-600">{author}</p>
+        <h3 className="text-xs sm:text-sm md:text-base font-bold truncate">
+          {title}
+        </h3>
+        <p className="text-[10px] sm:text-xs md:text-sm text-gray-600">
+          {author}
+        </p>
       </div>
     </div>
   );

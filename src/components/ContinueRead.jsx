@@ -1,6 +1,9 @@
 import BookHistory from "../assets/Bookdata/BookHIstory";
 import BookSlider from "../assets/Bookdata/BookSlider";
 import TheTraitorBook from "../images/thetraitorbook.png";
+import Library from "../assets/Bookdata/Library";
+import AddItem from "./AddItem";
+
 export default function ContinueRead() {
   const books = [
     { title: "Book 1", author: "Author A", coverImage: TheTraitorBook } ,
@@ -13,18 +16,14 @@ export default function ContinueRead() {
     { title: "Book 8", author: "Author H", coverImage: "/covers/book8.jpg" },
     { title: "Book 9", author: "Author I", coverImage: "/covers/book9.jpg" },
     { title: "Book 10", author: "Author J", coverImage: "/covers/book10.jpg" },
+    {title: "Book 11", author: "Author K", coverImage: "/covers/book11.jpg" },
+    {title: "Book 12", author: "Author L", coverImage: "/covers/book12.jpg" }
   ];
-
+  
   return (
-    <div className="h-full flex flex-col justify-between  items-center w-full">
-      <div>
-      <BookSlider books={books} visibleCount={5} step={5} />
-      </div>
-      <div>
-      <BookHistory />
-      </div>
-      <div>
-        
+    <div className="h-full flex flex-col justify-between  items-center w-full flex-1 [grid-area: continue] p-4 col-span-2 row-span-1">
+      <div className="w-full">
+        <Library></Library>
       </div>
     </div>
   );
