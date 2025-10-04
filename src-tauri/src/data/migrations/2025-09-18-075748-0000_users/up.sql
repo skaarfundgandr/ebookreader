@@ -4,5 +4,5 @@ CREATE TABLE `users` (
     `username` TEXT UNIQUE NOT NULL,
     `email` TEXT UNIQUE NOT NULL,
     `password_hash` TEXT NOT NULL,
-    `created_at` TEXT NOT NULL DEFAULT (datetime('now'))
-)
+    `created_at` TEXT DEFAULT (datetime('now'))
+);
