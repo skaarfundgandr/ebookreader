@@ -117,12 +117,11 @@ mod configuration_repo_tests {
 
 #[cfg(test)]
 mod user_repo_tests {
-    use chrono::Utc;
     use diesel::result::Error;
     use diesel_async::RunQueryDsl;
 
+    use crate::controllers::dto::user_dto::NewUserDTO;
     use crate::data::database;
-    use crate::data::models::users::NewUser;
     use crate::data::repos::user_repo::{
         create_user, get_all_users, get_user_by_id, get_user_by_username,
     };
@@ -145,12 +144,11 @@ mod user_repo_tests {
         email_val: &str,
         password_val: &str,
     ) -> Result<(), Error> {
-        let timestamp = Utc::now().to_rfc3339();
-        let new_user = NewUser {
+        let new_user = NewUserDTO {
             username: username_val,
             email: email_val,
             password_hash: password_val,
-            created_at: Some(&timestamp),
+            created_at: None,
         };
 
         create_user(new_user).await
@@ -317,3 +315,4 @@ mod user_repo_tests {
         }
     }
 }
+// TODO: Test controllers
