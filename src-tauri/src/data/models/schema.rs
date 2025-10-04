@@ -8,10 +8,16 @@ diesel::table! {
 }
 
 diesel::table! {
+    book_authors (book_id, author_id) {
+        book_id -> Integer,
+        author_id -> Integer,
+    }
+}
+
+diesel::table! {
     books (id) {
         id -> Integer,
         title -> Text,
-        author_id -> Nullable<Integer>,
         published_date -> Nullable<Text>,
         publisher_id -> Nullable<Integer>,
         isbn -> Nullable<Text>,
@@ -53,13 +59,15 @@ diesel::table! {
     }
 }
 
-diesel::joinable!(books -> authors (author_id));
+diesel::joinable!(book_authors -> authors (author_id));
+diesel::joinable!(book_authors -> books (book_id));
 diesel::joinable!(books -> publishers (publisher_id));
 diesel::joinable!(user_library -> books (book_id));
 diesel::joinable!(user_library -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     authors,
+    book_authors,
     books,
     configuration,
     publishers,
