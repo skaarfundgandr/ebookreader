@@ -13,6 +13,6 @@ pub struct Configuration {
 #[derive(Debug, AsChangeset, Insertable)]
 #[diesel(table_name = configuration)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
-pub struct ConfigurationForm<'a> {
+pub struct UpdateConfiguration<'a> {
     pub book_path: Option<&'a str>,
 }

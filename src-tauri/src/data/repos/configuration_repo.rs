@@ -6,7 +6,7 @@ use diesel_async::RunQueryDsl;
 
 use crate::data::database::*;
 use crate::data::models::configuration::Configuration;
-use crate::data::models::configuration::ConfigurationForm;
+use crate::data::models::configuration::UpdateConfiguration;
 
 pub async fn get_all_configurations() -> Result<Option<Vec<Configuration>>, Error> {
     use crate::data::models::schema::configuration::dsl::*;
@@ -54,7 +54,7 @@ pub async fn get_book_path() -> Result<Option<String>, Error> {
 pub async fn set_book_path(new_path: &str) -> Result<(), Error> {
     use crate::data::models::schema::configuration::dsl::*;
 
-    let new_config: ConfigurationForm<'_> = ConfigurationForm {
+    let new_config: UpdateConfiguration<'_> = UpdateConfiguration {
         book_path: Some(new_path),
     };
 
