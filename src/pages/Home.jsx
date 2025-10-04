@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <div
       className={`
-        grid h-screen
+        grid h-full
         grid-rows-[90px_1fr] 
         [grid-template-areas:'sidebar_header''sidebar_main']
 
@@ -27,6 +27,7 @@ export default function Home() {
       <Header />
       <Sidebar isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
       <Main className="[grid-area: main]" />
+    
     </div>
   );
 }

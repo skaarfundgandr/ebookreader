@@ -2,10 +2,11 @@ export default function HistoryCard({ image, title, value }) {
   return (
     <div
       className="
-        w-full max-w-xs sm:max-w-sm md:max-w-md 
-        bg-white rounded-md shadow-md 
-        flex items-center p-4 
-        hover:shadow-lg transition
+        w-full max-w-[85%] sm:max-w-xs md:max-w-sm
+        bg-white rounded-lg shadow-sm 
+        flex flex-col sm:flex-row items-center sm:items-center
+        p-3 sm:p-4 md:p-5
+        hover:shadow-md transition-shadow duration-300
       "
     >
       {/* Image */}
@@ -13,17 +14,34 @@ export default function HistoryCard({ image, title, value }) {
         src={image}
         alt={title}
         className="
-          w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 
-          object-cover rounded-full flex-shrink-0
+          w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14
+          object-cover rounded-full
+          mb-2 sm:mb-0 sm:mr-3
         "
       />
 
       {/* Text */}
-      <div className="flex flex-col ml-4 text-black items-center">
-        <h1 className="font-bold text-3xl sm:text-5xl md:text-6xl lg:text-7xl">
+      <div className="flex flex-col items-center sm:items-start text-black">
+        <h1
+          className="
+            font-bold 
+            text-xl sm:text-2xl md:text-3xl 
+            text-center sm:text-left
+            leading-snug
+          "
+        >
           {value}
         </h1>
-        <h1 className="font-bold text-sm sm:text-base md:text-lg">{title}</h1>
+        <h2
+          className="
+            font-medium 
+            text-xs sm:text-sm md:text-base 
+            text-center sm:text-left
+            opacity-80
+          "
+        >
+          {title}
+        </h2>
       </div>
     </div>
   );
