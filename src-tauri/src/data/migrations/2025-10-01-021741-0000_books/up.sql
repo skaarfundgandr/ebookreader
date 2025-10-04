@@ -1,12 +1,12 @@
 -- Your SQL goes here
 CREATE TABLE `books` (
-    `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    `book_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     `title` TEXT NOT NULL,
     `published_date` TEXT,
     `publisher_id` INTEGER,
     `isbn` TEXT,
     `file_type` TEXT,
-    `file_path` TEXT NOT NULL,
+    `file_path` TEXT,
     `added_at` TEXT DEFAULT (datetime('now')),
     FOREIGN KEY (`publisher_id`) REFERENCES `publishers`(`publisher_id`) ON DELETE SET NULL
 );
