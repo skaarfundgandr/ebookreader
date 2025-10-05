@@ -69,7 +69,7 @@ export default function LastRead() {
                 text-xs sm:text-sm md:text-base 
                 rounded-full shadow-md shadow-black/40
                 w-full sm:w-auto max-w-[200px]
-                transition-colors
+                transition-colors active:bg-gray-700 duration-150
               "
             >
               READ TODAY

@@ -6,25 +6,38 @@ export default function QuoteGenerator() {
   const [author, setAuthor] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Function to fetch a quote from API
+  // Fetch quote only if not already stored
   const fetchQuote = async () => {
     try {
       setLoading(true);
       const response = await fetch("https://quotes-api-self.vercel.app/quote");
       const data = await response.json();
+
+      // Save quote data in localStorage
+      localStorage.setItem("quoteData", JSON.stringify(data));
+
       setQuote(data.quote);
       setAuthor(data.author);
-      setLoading(false);
     } catch (error) {
       console.error("Error fetching quote:", error);
       setQuote("Failed to load quote. Try again!");
       setAuthor("");
+    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchQuote();
+    // Check if quote already exists in localStorage
+    const storedQuote = localStorage.getItem("quoteData");
+
+    if (storedQuote) {
+      const data = JSON.parse(storedQuote);
+      setQuote(data.quote);
+      setAuthor(data.author);
+    } else {
+      fetchQuote(); // Only fetch once on first load
+    }
   }, []);
 
   return (
@@ -48,7 +61,6 @@ export default function QuoteGenerator() {
                   bg-cover bg-center mx-auto"
         style={{ backgroundImage: `url(${backgroundImage})` }}
       >
-
         {loading ? (
           <p className="text-base sm:text-lg md:text-xl lg:text-2xl">Loading...</p>
         ) : (
