@@ -1,8 +1,8 @@
 use diesel::prelude::*;
 
+use crate::data::models::books::Books;
 use crate::data::models::schema::*;
 use crate::data::models::users::Users;
-use crate::data::models::books::Books;
 
 #[derive(Queryable, Identifiable, Associations, PartialEq, Debug)]
 #[diesel(table_name = user_library)]

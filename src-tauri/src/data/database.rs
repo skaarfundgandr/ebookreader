@@ -1,9 +1,15 @@
-use std::{env, sync::{atomic::{AtomicBool, Ordering}, Arc}};
+use std::{
+    env,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+};
 
 use diesel::SqliteConnection;
 use diesel_async::{
     pooled_connection::{
-        deadpool::{Object, Pool, PoolError, Hook, HookError},
+        deadpool::{Hook, HookError, Object, Pool, PoolError},
         AsyncDieselConnectionManager,
     },
     sync_connection_wrapper::SyncConnectionWrapper,
@@ -49,26 +55,33 @@ static DB_POOL: Lazy<Pool<SyncConnectionWrapper<SqliteConnection>>> = Lazy::new(
         AsyncDieselConnectionManager::<SyncConnectionWrapper<SqliteConnection>>::new(database_path);
 
     Pool::builder(config)
-        .post_create(Hook::async_fn(|conn: &mut SyncConnectionWrapper<SqliteConnection>, _meta| Box::pin(async move {
-            if !PRAGMAS_SET.load(Ordering::Relaxed) {
-                let result = conn.batch_execute(
-                "
+        .post_create(Hook::async_fn(
+            |conn: &mut SyncConnectionWrapper<SqliteConnection>, _meta| {
+                Box::pin(async move {
+                    if !PRAGMAS_SET.load(Ordering::Relaxed) {
+                        let result = conn
+                            .batch_execute(
+                                "
                 PRAGMA foreign_keys = ON;
                 PRAGMA journal_mode = WAL;
                 PRAGMA synchronous = NORMAL;
                 PRAGMA mmap_size = 30000000000;
                 ",
-                )
-                .await;
-                if let Ok(_) = result {
-                    PRAGMAS_SET.store(true, Ordering::Relaxed);
-                }
+                            )
+                            .await;
+                        if let Ok(_) = result {
+                            PRAGMAS_SET.store(true, Ordering::Relaxed);
+                        }
 
-                result.map_err(|e| HookError::Message(format!("Failed to set SQLite pragmas: {e}").into()))
-            } else {
-                Ok(())
-            }
-        })))
+                        result.map_err(|e| {
+                            HookError::Message(format!("Failed to set SQLite pragmas: {e}").into())
+                        })
+                    } else {
+                        Ok(())
+                    }
+                })
+            },
+        ))
         .build()
         .expect("Failed to create SQLite connection pool")
 });
