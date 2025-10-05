@@ -1,10 +1,12 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+
+use crate::data::models::users::Users;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserDTO {
     pub username: String,
     pub email: String,
-    pub created_at: String,
+    pub created_at: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -20,7 +22,7 @@ impl NewUserDTO<'_> {
         UserDTO {
             username: self.username.to_string(),
             email: self.email.to_string(),
-            created_at: self.created_at.unwrap_or("").to_string(),
+            created_at: self.created_at.map(|s| s.to_string()),
         }
     }
 }
@@ -30,7 +32,17 @@ impl From<NewUserDTO<'_>> for UserDTO {
         UserDTO {
             username: user.username.to_string(),
             email: user.email.to_string(),
-            created_at: user.created_at.unwrap_or("").to_string(),
+            created_at: user.created_at.map(|s| s.to_string()),
+        }
+    }
+}
+
+impl From<Users> for UserDTO {
+    fn from(user: Users) -> Self {
+        UserDTO {
+            username: user.username,
+            email: user.email,
+            created_at: user.created_at,
         }
     }
 }

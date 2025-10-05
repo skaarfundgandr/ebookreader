@@ -6,6 +6,7 @@ use diesel_async::RunQueryDsl;
 use tokio::sync::MutexGuard;
 
 use crate::controllers::dto::user_dto::NewUserDTO;
+use crate::controllers::dto::user_dto::UserDTO;
 use crate::data::database::*;
 use crate::data::models::users::NewUser;
 use crate::data::models::users::Users;
@@ -27,7 +28,7 @@ pub async fn get_all_users() -> Result<Option<Vec<Users>>, Error> {
     };
 }
 
-pub async fn get_user_by_id(id: i32) -> Result<Option<Users>, Error> {
+pub async fn get_user_by_id(id: i32) -> Result<Option<UserDTO>, Error> {
     use crate::data::models::schema::{users as user, users::dsl::*};
 
     let mut conn = connect_from_pool().await.map_err(|e| {
@@ -42,13 +43,13 @@ pub async fn get_user_by_id(id: i32) -> Result<Option<Users>, Error> {
         .first::<Users>(&mut conn)
         .await
     {
-        Ok(value) => Ok(Some(value)),
+        Ok(value) => Ok(Some(UserDTO::from(value))),
         Err(Error::NotFound) => Ok(None),
         Err(e) => Err(e),
     };
 }
 
-pub async fn get_user_by_username(user_name: &str) -> Result<Option<Users>, Error> {
+pub async fn get_user_by_username(user_name: &str) -> Result<Option<UserDTO>, Error> {
     use crate::data::models::schema::users::dsl::*;
 
     let mut conn = connect_from_pool().await.map_err(|e| {
@@ -63,7 +64,7 @@ pub async fn get_user_by_username(user_name: &str) -> Result<Option<Users>, Erro
         .first::<Users>(&mut conn)
         .await
     {
-        Ok(value) => Ok(Some(value)),
+        Ok(value) => Ok(Some(UserDTO::from(value))),
         Err(Error::NotFound) => Ok(None),
         Err(e) => Err(e),
     };
@@ -96,7 +97,7 @@ pub async fn create_user(new_user_dto: NewUserDTO<'_>) -> Result<(), Error> {
                     .values(new_user)
                     .execute(connection)
                     .await?;
-                                
+
                 Ok(())
             }
             .scope_boxed()
