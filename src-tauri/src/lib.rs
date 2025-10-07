@@ -145,9 +145,9 @@ mod user_repo_tests {
         password_val: &str,
     ) -> Result<(), Error> {
         let new_user = NewUserDTO {
-            username: username_val,
-            email: email_val,
-            password_hash: password_val,
+            username: username_val.to_string(),
+            email: email_val.to_string(),
+            password_hash: password_val.to_string(),
             created_at: None,
         };
 
