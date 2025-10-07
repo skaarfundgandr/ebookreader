@@ -5,28 +5,12 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
-use serde::{Deserialize, Serialize};
 
 use crate::controllers::dto::user_dto::*;
 use crate::data::repos::user_repo;
-// TODO: Avoid using this struct
-#[derive(Serialize, Deserialize)]
-pub struct User {
-    username: String,
-    email: String,
-    password_hash: String,
-    created_at: Option<String>,
-}
-// TODO: Endpoints should return UserDTO instead of User
-pub async fn create_user(Json(user): Json<User>) -> impl IntoResponse {
-    let new_user = NewUserDTO {
-        username: &user.username,
-        email: &user.email,
-        password_hash: &user.password_hash,
-        created_at: None,
-    };
 
-    match user_repo::create_user(new_user).await {
+pub async fn create_user(Json(user): Json<NewUserDTO>) -> impl IntoResponse {
+    match user_repo::create_user(user).await {
         Ok(_) => (),
         Err(e) => {
             eprintln!("Error creating user: {}", e);

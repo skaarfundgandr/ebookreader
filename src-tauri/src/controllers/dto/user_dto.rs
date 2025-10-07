@@ -10,25 +10,15 @@ pub struct UserDTO {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NewUserDTO<'a> {
-    pub username: &'a str,
-    pub email: &'a str,
-    pub password_hash: &'a str,
-    pub created_at: Option<&'a str>,
+pub struct NewUserDTO {
+    pub username: String,
+    pub email: String,
+    pub password_hash: String,
+    pub created_at: Option<String>,
 }
 
-impl NewUserDTO<'_> {
-    pub fn to_user_dto(&self) -> UserDTO {
-        UserDTO {
-            username: self.username.to_string(),
-            email: self.email.to_string(),
-            created_at: self.created_at.map(|s| s.to_string()),
-        }
-    }
-}
-
-impl From<NewUserDTO<'_>> for UserDTO {
-    fn from(user: NewUserDTO<'_>) -> Self {
+impl From<NewUserDTO> for UserDTO {
+    fn from(user: NewUserDTO) -> Self {
         UserDTO {
             username: user.username.to_string(),
             email: user.email.to_string(),

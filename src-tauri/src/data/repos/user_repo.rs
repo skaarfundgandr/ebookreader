@@ -69,8 +69,7 @@ pub async fn get_user_by_username(user_name: &str) -> Result<Option<UserDTO>, Er
         Err(e) => Err(e),
     };
 }
-// TODO: Use DTOs
-pub async fn create_user(new_user_dto: NewUserDTO<'_>) -> Result<(), Error> {
+pub async fn create_user(new_user_dto: NewUserDTO) -> Result<(), Error> {
     use crate::data::models::schema::users::dsl::*;
 
     let mut conn = connect_from_pool().await.map_err(|e| {
@@ -84,9 +83,9 @@ pub async fn create_user(new_user_dto: NewUserDTO<'_>) -> Result<(), Error> {
     let _guard: MutexGuard<()> = db_lock.lock().await;
 
     let new_user = NewUser {
-        username: new_user_dto.username,
-        email: new_user_dto.email,
-        password_hash: new_user_dto.password_hash,
+        username: &new_user_dto.username,
+        email: &new_user_dto.email,
+        password_hash: &new_user_dto.password_hash,
         created_at: None,
     };
 
