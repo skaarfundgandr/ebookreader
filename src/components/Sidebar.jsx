@@ -1,94 +1,64 @@
-import { IoHomeOutline } from "react-icons/io5";
+import { IoHomeOutline, IoSettingsOutline, IoBook, IoLibraryOutline  } from "react-icons/io5";
+import { IoIosHelpCircleOutline } from "react-icons/io";
 import { RiExpandRightLine, RiExpandLeftLine } from "react-icons/ri";
-import { MdDashboardCustomize } from "react-icons/md";
-import { IoSettingsOutline } from "react-icons/io5";
-import { HiMiniQuestionMarkCircle } from "react-icons/hi2";
-import { IoBook } from "react-icons/io5";
+import { NavLink } from "react-router-dom";
+import { IoLibrary } from "react-icons/io5";
 
 export default function Sidebar({ isExpanded, setIsExpanded }) {
+  const navItems = [
+    { icon: <IoHomeOutline size={25} />, label: "Home", path: "/home" },
+    { icon: <IoSettingsOutline size={25} />, label: "Settings", path: "/settings" },
+    { icon: <IoIosHelpCircleOutline size={25} />, label: "Help", path: "/help" },
+    { icon: <IoLibraryOutline size={25} />, label: "Library", path: "/library" },
+  ];
+
   return (
-    <div
-      className="
-        sticky top-0 self-start
-        [grid-area:sidebar] bg-[var(--color-primary)] text-white
-        h-screen p-4 flex flex-col justify-between
-        transition-all duration-300
-      "
+    <aside
+      className={`
+        bg-[var(--color-primary)] text-white p-4 flex flex-col justify-between
+        transition-all duration-300 h-full
+      `}
     >
-      {/* Top Logo */}
+      {/* Logo */}
       <div
-        className={`
-          flex items-center pt-4 transition-all duration-300
-          ${isExpanded ? "justify-start" : "justify-center"}
-        `}
+        className={`flex items-center pt-4 transition-all duration-300 ${
+          isExpanded ? "justify-start" : "justify-center"
+        }`}
       >
         <IoBook size={40} />
-        <span
-          className={`
-            text-lg font-bold whitespace-nowrap overflow-hidden transition-all duration-300
-            ${isExpanded 
-              ? "opacity-100 max-w-[200px] ml-4" 
-              : "opacity-0 max-w-0 ml-0"}
-          `}
-        >
-          My Library
-        </span>
+        {isExpanded && (
+          <span className="text-lg font-bold ml-4 whitespace-nowrap">My Library</span>
+        )}
       </div>
 
       {/* Navigation */}
-      <div className="flex flex-col mt-10 gap-5">
-        {[
-          { icon: <IoHomeOutline size={25} />, label: "Home" },
-          { icon: <MdDashboardCustomize size={25} />, label: "Dashboard" },
-          { icon: <IoSettingsOutline size={25} />, label: "Settings" },
-          { icon: <HiMiniQuestionMarkCircle size={25} />, label: "Help" },
-        ].map(({ icon, label }, i) => (
-          <div
+      <nav className="flex flex-col mt-10 gap-4">
+        {navItems.map(({ icon, label, path }, i) => (
+          <NavLink
             key={i}
-            className={`
-              flex items-center transition-all duration-300
-              ${isExpanded ? "justify-start" : "justify-center"}
-            `}
+            to={path}
+            className={({ isActive }) =>
+              `flex items-center gap-3 p-2 rounded-md transition-all duration-200 ${
+                isActive ? "bg-white/20 " : "hover:bg-white/10"
+              } ${isExpanded ? "justify-start" : "justify-center"}`
+            }
           >
-            <div className="flex items-center">
-              {icon}
-              <span
-                className={`
-                  whitespace-nowrap overflow-hidden transition-all duration-300
-                  ${isExpanded 
-                    ? "opacity-100 max-w-[150px] ml-3" 
-                    : "opacity-0 max-w-0 ml-0"}
-                `}
-              >
-                {label}
-              </span>
-            </div>
-          </div>
+            {icon}
+            {isExpanded && <span className="whitespace-nowrap">{label}</span>}
+          </NavLink>
         ))}
-      </div>
+      </nav>
 
-      {/* Expand / Collapse Button */}
+      {/* Collapse Button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`
-          flex items-center mb-6 p-2 rounded-md hover:bg-white/20 transition-all duration-300
-          ${isExpanded ? "justify-start" : "justify-center"}
-        `}
+        className={`flex items-center p-2 rounded-md hover:bg-white/20 transition-all duration-300 ${
+          isExpanded ? "justify-start" : "justify-center"
+        }`}
       >
-        <div className="flex items-center">
-          {isExpanded ? <RiExpandLeftLine size={25} /> : <RiExpandRightLine size={25} />}
-          <span
-            className={`
-              whitespace-nowrap overflow-hidden transition-all duration-300
-              ${isExpanded 
-                ? "opacity-100 max-w-[120px] ml-2" 
-                : "opacity-0 max-w-0 ml-0"}
-            `}
-          >
-            Collapse
-          </span>
-        </div>
+        {isExpanded ? <RiExpandLeftLine size={30} /> : <RiExpandRightLine size={30} />}
+        {isExpanded && <span className="ml-2">Collapse</span>}
       </button>
-    </div>
+    </aside>
   );
 }

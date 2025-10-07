@@ -1,9 +1,18 @@
+import React from "react";
 import { CiCirclePlus } from "react-icons/ci";
+import { useNavigate } from "react-router-dom";
 
 export default function AddItem() {
+  const navigate = useNavigate();
+
+  const handleAddClick = () => {
+    navigate("/library"); // 👈 redirect to Library path
+  };
+
   return (
     <div className="h-12 w-40 rounded-full">
       <button
+        onClick={handleAddClick}
         className="
           flex items-center justify-start p-2 h-full w-full 
           bg-[var(--color-primary)] text-white rounded-full

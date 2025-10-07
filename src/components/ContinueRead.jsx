@@ -1,8 +1,5 @@
-import BookHistory from "../assets/Bookdata/BookHIstory";
-import BookSlider from "../assets/Bookdata/BookSlider";
 import TheTraitorBook from "../images/thetraitorbook.png";
 import Library from "../assets/Bookdata/Library";
-import AddItem from "./AddItem";
 
 export default function ContinueRead() {
   const books = [

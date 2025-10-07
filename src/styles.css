@@ -1,6 +1,40 @@
 @import "tailwindcss";
 
+
 @theme {
     --color-primary: #ff724f;
     --color-secondary: #1c1c1e;
 }
+
+.spaceGlow {
+  display: inline-block;
+  font-weight: 700;
+  background: linear-gradient(
+    90deg,
+    #ff9ecb,
+    #ffb3c6,
+    #ffd36e,
+    #ffb3c6,
+    #ff9ecb
+  );
+  background-size: 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: spaceGlow 6s ease-in-out infinite;
+  text-shadow: 0 0 10px rgba(255, 179, 198, 0.4),
+               0 0 20px rgba(255, 211, 110, 0.3);
+}
+
+@keyframes spaceGlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+
