@@ -12,9 +12,12 @@
   "app": {
     "windows": [
       {
-        "title": "ebookreader",
+        "title": "Stellaron",
         "width": 1580,
-        "height": 1020
+        "height": 1020,
+        "titleBarStyle": "Transparent",
+        "decorations": false,
+        "resizable": true
       }
     ],
     "security": {
