@@ -10,8 +10,10 @@ export default function LastRead() {
           w-full h-auto 
           flex flex-col sm:flex-row 
           items-center sm:items-start justify-center 
-          rounded-xl shadow-lg 
-          bg-[var(--color-primary)] text-white 
+          rounded-xl shadow-md 
+          bg-[rgba(42,36,50,0.86)] 
+          backdrop-blur-md  text-stellar-light
+          border border-white/10
           p-5
           transition-all duration-300
         "
