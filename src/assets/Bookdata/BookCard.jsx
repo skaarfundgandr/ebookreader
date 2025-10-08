@@ -14,7 +14,7 @@ export default function BookCard({ title, author, coverImage }) {
       `}
     >
       {hasImage ? (
-        <div className="aspect-[3/4] bg-gray-200 flex items-center justify-center overflow-hidden">
+        <div className="aspect-[3/4] bg-stellar-dark flex items-center justify-center overflow-hidden">
           <img
             src={coverImage}
             alt={title}
@@ -23,13 +23,13 @@ export default function BookCard({ title, author, coverImage }) {
           />
         </div>
       ) : (
-        <div className="aspect-[3/4] flex flex-col justify-center items-center bg-gray-300">
+        <div className="aspect-[3/4] flex flex-col justify-center items-center bg-gray-200">
           <span className="text-black text-sm text-center">{title}</span>
         </div>
       )}
 
       {/* Details */}
-      <div className="bg-white p-2 text-center">
+      <div className="bg-black p-2 text-center">
         <h3 className="text-xs sm:text-sm md:text-base font-bold truncate">
           {title}
         </h3>
