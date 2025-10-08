@@ -5,8 +5,8 @@ use std::net::SocketAddr;
 
 use axum::routing::{get, post};
 use axum::Router;
-use ebookreader_lib::commands::sample;
-use ebookreader_lib::controllers::user_controller;
+use stellaron_lib::commands::sample;
+use stellaron_lib::controllers::user_controller;
 use tokio::net::TcpListener;
 
 #[tokio::main]
