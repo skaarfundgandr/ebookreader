@@ -1,5 +1,4 @@
-import AddItem from "../../components/AddItem";
-import BookHistory from "./BookHIstory";
+import BookHistory from "./BookHistory";
 import BookSlider from "./BookSlider";
 
 export default function Library() {
@@ -29,7 +28,6 @@ export default function Library() {
     { title: "Pages of Tomorrow", author: "Yara Bloom", coverImage: "/covers/book23.jpg" },
   ];
 
-
   const recentlyAdded = [
     { title: "New Book 1", author: "Author X", coverImage: "/covers/new1.jpg" },
     { title: "New Book 2", author: "Author Y", coverImage: "/covers/new2.jpg" }
@@ -40,34 +38,18 @@ export default function Library() {
   ];
 
   return (
-    <div className="w-full flex flex-col gap-8">
-      {/* Header row: BookHistory + AddItem */}
-      <div
-        className="
-          flex flex-col md:flex-row 
-          items-center md:items-center 
-          justify-center md:justify-between 
-          w-full gap-4 md:gap-0
-        "
-      >
-        {/* Left spacer for centering only on desktop */}
-        <div className="hidden md:block w-[100px]" />
-
-        {/* Centered BookHistory */}
-        <div className="flex justify-center flex-1 order-1 md:order-none">
-          <BookHistory />
-        </div>
-
-        {/* Right-aligned AddItem */}
-        <div className="flex justify-center md:justify-end w-full md:w-auto pr-0 md:pr-5 order-2 md:order-none">
-          <AddItem />
-        </div>
+    <div className="w-full flex flex-col gap-10 items-center">
+      {/* Centered BookHistory */}
+      <div className="flex justify-center w-full">
+        <BookHistory />
       </div>
 
-      {/* Sliders */}
-      <BookSlider books={continueReading} title="Continue Reading" />
-      <BookSlider books={recentlyAdded} title="Recently Added" />
-      <BookSlider books={favorites} title="Favorites" />
+      {/* Book Sliders */}
+      <div className="w-full">
+        <BookSlider books={continueReading} title="Continue Reading" />
+        <BookSlider books={recentlyAdded} title="Recently Added" />
+        <BookSlider books={favorites} title="Favorites" />
+      </div>
     </div>
   );
 }

@@ -2,11 +2,13 @@ export default function HistoryCard({ image, title, value }) {
   return (
     <div
       className="
-        w-full max-w-[85%] sm:max-w-xs md:max-w-sm
-        bg-white rounded-lg shadow-sm 
+        w-full sm:max-w-xs md:max-w-sm
+        bg-white/10 backdrop-blur-md border border-white/20
+        rounded-lg shadow-sm 
         flex flex-col sm:flex-row items-center sm:items-center
         p-3 sm:p-4 md:p-5
-        hover:shadow-md transition-shadow duration-300
+        hover:shadow-[0_0_15px_rgba(255,153,51,0.3)]
+        transition-all duration-300
       "
     >
       {/* Image */}
@@ -16,18 +18,20 @@ export default function HistoryCard({ image, title, value }) {
         className="
           w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14
           object-cover rounded-full
-          mb-2 sm:mb-0 sm:mr-3
+          mb-2 sm:mb-0
+          border border-orange-400/40
         "
       />
 
       {/* Text */}
-      <div className="flex flex-col items-center sm:items-start text-black">
+      <div className="flex flex-col items-center sm:items-start text-white">
         <h1
           className="
             font-bold 
             text-xl sm:text-2xl md:text-3xl 
             text-center sm:text-left
             leading-snug
+            bg-gradient-to-r from-orange-400 to-violet-500 bg-clip-text text-transparent
           "
         >
           {value}
@@ -37,7 +41,7 @@ export default function HistoryCard({ image, title, value }) {
             font-medium 
             text-xs sm:text-sm md:text-base 
             text-center sm:text-left
-            opacity-80
+            text-gray-300
           "
         >
           {title}
