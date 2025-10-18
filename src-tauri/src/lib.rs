@@ -3,6 +3,7 @@ pub mod controllers;
 pub mod data;
 pub mod handlers;
 pub mod utils;
+pub mod api;
 
 #[cfg(test)]
 mod connection_tests {
