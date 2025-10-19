@@ -1,9 +1,12 @@
+pub mod api;
 pub mod commands;
 pub mod controllers;
 pub mod data;
 pub mod handlers;
+pub mod opds;
+pub mod parsers;
+pub mod services;
 pub mod utils;
-pub mod api;
 
 #[cfg(test)]
 mod connection_tests {

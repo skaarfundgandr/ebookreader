@@ -1,8 +1,8 @@
-use std::net::SocketAddr;
+use crate::controllers::user_controller;
 use axum::routing::{get, post};
 use axum::Router;
+use std::net::SocketAddr;
 use tokio::net::TcpListener;
-use crate::controllers::user_controller;
 
 pub fn start() {
     let api: Router<()> = Router::new()
