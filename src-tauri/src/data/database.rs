@@ -85,7 +85,7 @@ static DB_POOL: Lazy<Pool<SyncConnectionWrapper<SqliteConnection>>> = Lazy::new(
         .build()
         .expect("Failed to create SQLite connection pool")
 });
-
+// Indicates whether the SQLite pragmas have been set
 static PRAGMAS_SET: AtomicBool = AtomicBool::new(false);
 
 pub fn lock_db() -> Arc<Mutex<()>> {
