@@ -1,0 +1,186 @@
+use diesel::prelude::*;
+use diesel::result::{self, DatabaseErrorKind, Error};
+use diesel_async::scoped_futures::ScopedFutureExt;
+use diesel_async::{AsyncConnection, RunQueryDsl};
+use async_trait::async_trait;
+use tokio::sync::MutexGuard;
+
+use crate::data::{
+    models::{
+        book_authors::BookAuthors,
+        authors::Authors,
+        books::Books,
+    },
+    repos::traits::repository::Repository,
+    database::{connect_from_pool, lock_db},
+};
+
+// TODO: Test this
+pub struct BookAuthorRepo;
+
+impl BookAuthorRepo {
+    pub fn new() -> Self {
+        BookAuthorRepo
+    }
+
+    pub async fn get_authors_by_book(&self, bid: i32) -> Result<Option<Vec<Authors>>, result::Error> {
+        use crate::data::models::schema::{authors, book_authors};
+
+        let mut conn = connect_from_pool().await.map_err(|e| {
+            Error::DatabaseError(
+                DatabaseErrorKind::UnableToSendCommand,
+                Box::new(e.to_string()),
+            )
+        })?;
+
+        return match book_authors::table
+            .inner_join(authors::table.on(authors::author_id.eq(book_authors::author_id)))
+            .filter(book_authors::book_id.eq(bid))
+            .select((authors::author_id, authors::name))
+            .load::<Authors>(&mut conn)
+            .await
+        {
+            Ok(value) => Ok(Some(value)),
+            Err(Error::NotFound) => Ok(None),
+            Err(e) => Err(e),
+        };
+    }
+
+    pub async fn get_books_by_author(&self, aid: i32) -> Result<Option<Vec<Books>>, result::Error> {
+        use crate::data::models::schema::{book_authors, books};
+
+        let mut conn = connect_from_pool().await.map_err(|e| {
+            Error::DatabaseError(
+                DatabaseErrorKind::UnableToSendCommand,
+                Box::new(e.to_string()),
+            )
+        })?;
+
+        return match book_authors::table
+            .inner_join(books::table.on(books::book_id.eq(book_authors::book_id)))
+            .filter(book_authors::author_id.eq(aid))
+            .select((
+                books::book_id,
+                books::title,
+                books::published_date,
+                books::publisher_id,
+                books::isbn,
+                books::file_type,
+                books::file_path,
+                books::added_at,
+            ))
+            .load::<Books>(&mut conn)
+            .await
+        {
+            Ok(value) => Ok(Some(value)),
+            Err(Error::NotFound) => Ok(None),
+            Err(e) => Err(e),
+        };
+    }
+}
+
+#[async_trait]
+impl Repository for BookAuthorRepo {
+    type Item = BookAuthors;
+    type NewItem = BookAuthors;  // Insertable is same as the main struct
+    type Form = BookAuthors;      // No update form needed for junction tables
+    type Id = (i32, i32);  // Tuple: (book_id, author_id)
+
+    async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, result::Error> {
+        use crate::data::models::schema::book_authors::dsl::*;
+
+        let mut conn = connect_from_pool().await.map_err(|e| {
+            result::Error::DatabaseError(
+                DatabaseErrorKind::UnableToSendCommand,
+                Box::new(e.to_string()),
+            )
+        })?;
+
+        return match book_authors.load::<Self::Item>(&mut conn).await {
+            Ok(value) => Ok(Some(value)),
+            Err(result::Error::NotFound) => Ok(None),
+            Err(e) => Err(e),
+        };
+    }
+
+    async fn get_by_id(&self, id: Self::Id) -> Result<Option<Self::Item>, result::Error> {
+        use crate::data::models::schema::book_authors::dsl::*;
+
+        let mut conn = connect_from_pool().await.map_err(|e| {
+            Error::DatabaseError(
+                DatabaseErrorKind::UnableToSendCommand,
+                Box::new(e.to_string()),
+            )
+        })?;
+
+        return match book_authors
+            .filter(book_id.eq(id.0).and(author_id.eq(id.1)))
+            .first::<BookAuthors>(&mut conn)
+            .await
+        {
+            Ok(value) => Ok(Some(value)),
+            Err(Error::NotFound) => Ok(None),
+            Err(e) => Err(e),
+        };
+    }
+
+    async fn add(&self, new_item: Self::NewItem) -> Result<Self::Item, result::Error> {
+        use crate::data::models::schema::book_authors::dsl::*;
+
+        let mut conn = connect_from_pool().await.map_err(|e| {
+            Error::DatabaseError(
+                DatabaseErrorKind::UnableToSendCommand,
+                Box::new(e.to_string()),
+            )
+        })?;
+
+        let db_lock = lock_db();
+        let _guard: MutexGuard<()> = db_lock.lock().await;
+
+        conn.transaction(|connection| {
+            async move {
+                diesel::insert_into(book_authors)
+                    .values(&new_item)
+                    .execute(connection)
+                    .await?;
+
+                // Return the inserted item (it's the same as new_item for junction tables)
+                Ok(new_item)
+            }
+            .scope_boxed()
+        })
+        .await
+    }
+
+    async fn update(&self, _updated_item: Self::Form) -> Result<(), result::Error> {
+        // Junction tables typically don't support updates - delete and re-add instead
+        Err(Error::NotFound)
+    }
+
+    async fn delete(&self, id: Self::Id) -> Result<(), result::Error> {
+        use crate::data::models::schema::book_authors::dsl::*;
+
+        let mut conn = connect_from_pool().await.map_err(|e| {
+            Error::DatabaseError(
+                DatabaseErrorKind::UnableToSendCommand,
+                Box::new(e.to_string()),
+            )
+        })?;
+
+        let db_lock = lock_db();
+        let _guard: MutexGuard<()> = db_lock.lock().await;
+
+        conn.transaction(|connection| {
+            async move {
+                diesel::delete(
+                    book_authors.filter(book_id.eq(id.0).and(author_id.eq(id.1)))
+                )
+                .execute(connection)
+                .await?;
+                Ok(())
+            }
+            .scope_boxed()
+        })
+        .await
+    }
+}
