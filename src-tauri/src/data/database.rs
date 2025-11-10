@@ -61,12 +61,12 @@ static DB_POOL: Lazy<Pool<SyncConnectionWrapper<SqliteConnection>>> = Lazy::new(
                     if !PRAGMAS_SET.load(Ordering::Relaxed) {
                         let result = conn
                             .batch_execute(
-                                "
-                PRAGMA foreign_keys = ON;
-                PRAGMA journal_mode = WAL;
-                PRAGMA synchronous = NORMAL;
-                PRAGMA mmap_size = 30000000000;
-                ",
+                        "
+                                PRAGMA foreign_keys = ON;
+                                PRAGMA journal_mode = WAL;
+                                PRAGMA synchronous = NORMAL;
+                                PRAGMA mmap_size = 30000000000;
+                            ",
                             )
                             .await;
                         if let Ok(_) = result {

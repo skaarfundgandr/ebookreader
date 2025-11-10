@@ -22,8 +22,12 @@ src/
 │   ├── database.rs    # Pooled SQLite connection (diesel-async)
 │   ├── models/        # Diesel schema and model definitions
 │   ├── repos/         # Data access layer (async diesel queries)
+│   │   ├── traits/    # Repository trait definitions
+│   │   └── implementors/ # Diesel/SQLite implementations
 │   └── migrations/    # Diesel migration files
-└── handlers/          # Business logic (epub_handler, mobi_handler, pdf_handler)
+├── handlers/          # Business logic (epub_handler, mobi_handler, pdf_handler)
+├── services/          # Service layer (book, library, metadata, opds, etc.)
+└── opds/              # OPDS feed generation (acquisition, navigation, search)
 ```
 
 ## Developer Workflows
@@ -84,12 +88,60 @@ diesel::insert_into(table)
     .execute(connection).await?;
 ```
 
+### Repository Trait Pattern (Active Refactoring)
+
+Generic `Repository` trait with associated types in `repos/traits/repository.rs`:
+```rust
+#[async_trait]
+pub trait Repository {
+    type Item;       // Entity type (e.g., Authors, Books)
+    type NewItem;    // Insert form (e.g., NewAuthor)
+    type Form;       // Update form (e.g., AuthorForm)
+    type Id: Send + Sync;  // Primary key type (usually i32)
+    
+    async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, diesel::result::Error>;
+    async fn get_by_id(&self, id: Self::Id) -> Result<Option<Self::Item>, diesel::result::Error>;
+    async fn add(&self, item: Self::Item) -> Result<Self::Item, diesel::result::Error>;
+    async fn update(&self, item: Self::Item) -> Result<(), diesel::result::Error>;
+    async fn delete(&self, id: Self::Id) -> Result<(), diesel::result::Error>;
+}
+```
+
+**Implementation example** (`repos/implementors/author_repo.rs`):
+```rust
+pub struct AuthorRepo;  // No connection stored
+
+#[async_trait]
+impl Repository for AuthorRepo {
+    type Item = Authors;
+    type NewItem = NewAuthor<'static>;
+    type Form = AuthorForm<'static>;
+    type Id = i32;
+    
+    async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, diesel::result::Error> {
+        let mut conn = connect_from_pool().await.map_err(/*...*/)?;
+        // query logic
+    }
+}
+```
+
+**Naming conventions:**
+- Trait files: `snake_case` without `I` prefix (e.g., `repository.rs`, `author_repository.rs`)
+- Implementor structs: `CamelCase` with optional backend qualifier (e.g., `AuthorRepo`, `DieselAuthorRepo`)
+- Never store connection objects in repo struct fields - acquire per method
+
 ### Module Conventions
 
 - **Models** (`data/models/*.rs`): Diesel structs with `Queryable`, `Insertable`, `AsChangeset` derives
-- **Repos** (`data/repos/*.rs`): Return `Result<Option<T>, Error>` - `None` = not found, `Err` = query failed
+- **Repos** (`data/repos/`): Trait-based architecture
+  - **Traits** (`repos/traits/`): Generic `Repository` trait with associated types (`Item`, `NewItem`, `Form`, `Id`)
+  - **Implementors** (`repos/implementors/`): Concrete Diesel implementations (e.g., `AuthorRepo`, `BookRepo`)
+  - Return `Result<Option<T>, Error>` - `None` = not found, `Err` = query failed
+  - **Don't store connections in struct fields** - acquire from pool per method via `connect_from_pool()`
 - **Controllers** (`controllers/*.rs`): Axum handlers, convert Models → DTOs to hide sensitive fields
 - **DTOs** (`controllers/dto/*.rs`): Implement `From<Model>` for clean conversions
+- **Services** (`services/*.rs`): Business logic layer coordinating repos and handlers
+- **Handlers** (`handlers/*.rs`): File format-specific logic (epub, mobi, pdf parsing)
 
 ### Testing
 
@@ -130,6 +182,7 @@ Run with: `cargo test`
 
 ## Current TODOs & Limitations
 
+- **Repository refactoring**: Converting from standalone functions to trait-based implementors (see `repos/traits/` and `repos/implementors/`)
 - **EPUB handler** (`handlers/epub_handler.rs`): `scan_epubs()` implementation incomplete
 - **File handlers**: MOBI and PDF handlers are empty stubs
 - **Authentication**: User controller lacks auth/authorization
@@ -143,3 +196,5 @@ Run with: `cargo test`
 2. **Async runtime**: Everything runs on Tokio - avoid blocking operations
 3. **Error handling**: Repos use `Result<Option<T>, Error>` pattern - distinguish between "not found" (Ok(None)) vs actual errors
 4. **Frontend integration**: Expects built frontend in `../dist` (configured in `tauri.conf.json`)
+5. **SQLite concurrency**: Use `lock_db()` mutex for all write operations to prevent "database is locked" errors
+6. **Associated types**: Use `Send + Sync` bounds on trait `Id` types for async/thread safety

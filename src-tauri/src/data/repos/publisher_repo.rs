@@ -7,7 +7,7 @@ use tokio::sync::MutexGuard;
 
 use crate::data::database::*;
 use crate::data::models::publishers::{NewPublisher, Publishers, UpdatePublisher};
-
+// TODO: Make this implement the repository trait and deprecate after
 pub async fn get_all_publishers() -> Result<Option<Vec<Publishers>>, Error> {
     use crate::data::models::schema::publishers::dsl::*;
 

@@ -22,3 +22,9 @@ pub struct NewAuthor<'a> {
 pub struct UpdateAuthor<'a> {
     pub name: Option<&'a str>,
 }
+
+#[derive(AsChangeset, PartialEq, Debug)]
+#[diesel(table_name = authors)]
+pub struct AuthorForm<'a> {
+    pub name: Option<&'a str>,
+}

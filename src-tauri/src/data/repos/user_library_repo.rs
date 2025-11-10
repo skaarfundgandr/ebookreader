@@ -8,7 +8,7 @@ use tokio::sync::MutexGuard;
 use crate::data::database::*;
 use crate::data::models::books::Books;
 use crate::data::models::user_library::{NewUserLibrary, UserLibrary};
-
+// TODO: Make this implement the repository trait and deprecate after
 pub async fn get_all_user_library_entries() -> Result<Option<Vec<UserLibrary>>, Error> {
     use crate::data::models::schema::user_library::dsl::*;
 

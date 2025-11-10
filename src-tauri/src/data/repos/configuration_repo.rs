@@ -7,7 +7,8 @@ use diesel_async::RunQueryDsl;
 use crate::data::database::*;
 use crate::data::models::configuration::Configuration;
 use crate::data::models::configuration::UpdateConfiguration;
-
+// TODO: Make this implement the repository trait and deprecate after
+// TODO: Rename to table to library/libraries
 pub async fn get_all_configurations() -> Result<Option<Vec<Configuration>>, Error> {
     use crate::data::models::schema::configuration::dsl::*;
 

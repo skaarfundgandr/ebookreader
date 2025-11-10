@@ -10,7 +10,7 @@ use crate::controllers::dto::user_dto::UserDTO;
 use crate::data::database::*;
 use crate::data::models::users::NewUser;
 use crate::data::models::users::Users;
-
+// TODO: Make this implement the repository trait and deprecate after
 pub async fn get_all_users() -> Result<Option<Vec<Users>>, Error> {
     use crate::data::models::schema::users::dsl::*;
 

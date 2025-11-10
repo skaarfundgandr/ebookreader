@@ -32,6 +32,7 @@ rbook = { version = "0.6.6", features = ["threadsafe"] }
 dotenvy = "0.15.7"
 axum = "0.8.4"
 walkdir = "2.5.0"
+async-trait = "0.1.89"
 
 # 👇 Force bundled SQLite
 [dependencies.libsqlite3-sys]

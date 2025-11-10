@@ -22,3 +22,11 @@ pub struct NewUser<'a> {
     pub password_hash: &'a str,
     pub created_at: Option<&'a str>,
 }
+
+#[derive(AsChangeset, PartialEq, Debug)]
+#[diesel(table_name = users)]
+pub struct UpdateUser<'a> {
+    pub username: Option<&'a str>,
+    pub email: Option<&'a str>,
+    pub password_hash: Option<&'a str>,
+}

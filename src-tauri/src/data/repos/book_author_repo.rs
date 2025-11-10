@@ -9,7 +9,7 @@ use crate::data::database::*;
 use crate::data::models::authors::Authors;
 use crate::data::models::book_authors::BookAuthors;
 use crate::data::models::books::Books;
-
+// TODO: Make this implement the Repository trait and deprecate the functions in book_author_repo.rs after
 pub async fn get_all_book_author_relationships() -> Result<Option<Vec<BookAuthors>>, Error> {
     use crate::data::models::schema::book_authors::dsl::*;
 
