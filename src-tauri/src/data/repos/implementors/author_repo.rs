@@ -1,4 +1,11 @@
-use diesel::result;
+use diesel::prelude::*;
+use diesel::result::{Error, DatabaseErrorKind};
+use diesel_async::{
+    AsyncConnection,
+    RunQueryDsl,
+    scoped_futures::ScopedFutureExt
+};
+use tokio::sync::MutexGuard;
 use async_trait::async_trait;
 
 use crate::data::{
@@ -8,7 +15,7 @@ use crate::data::{
         AuthorForm
     },
     repos::traits::repository::Repository,
-    database::connect_from_pool,
+    database::{connect_from_pool, lock_db},
 };
 // TODO: Test this
 pub struct AuthorRepo;
@@ -18,7 +25,7 @@ impl AuthorRepo {
         AuthorRepo
     }
 
-    async fn search_by_name(&self, name_query: &str) -> Result<Option<Vec<Authors>>, result::Error> {
+    async fn search_by_name(&self, name_query: &str) -> Result<Option<Vec<Authors>>, Error> {
         use crate::data::models::schema::authors::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -43,15 +50,15 @@ impl AuthorRepo {
 #[async_trait]
 impl Repository for AuthorRepo {
     type Item = Authors;
-    type NewItem = NewAuthor<'static>;
-    type Form = AuthorForm<'static>;
+    type NewItem<'a> = NewAuthor<'a>;
+    type Form<'a> = AuthorForm<'a>;
     type Id = i32;
 
-    async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, result::Error> {
+    async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, Error> {
         use crate::data::models::schema::authors::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
-            result::Error::DatabaseError(
+            Error::DatabaseError(
                 DatabaseErrorKind::UnableToSendCommand,
                 Box::new(e.to_string()),
             )
@@ -59,12 +66,12 @@ impl Repository for AuthorRepo {
 
         match authors.load::<Self::Item>(&mut conn).await {
             Ok(value) => Ok(Some(value)),
-            Err(result::Error::NotFound) => Ok(None),
+            Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),
         }
     }
 
-    async fn get_by_id(&self, id: Self::Id) -> Result<Option<Self::Item>, result::Error> {
+    async fn get_by_id(&self, id: Self::Id) -> Result<Option<Self::Item>, Error> {
         use crate::data::models::schema::{authors as author, authors::dsl::*};
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -85,7 +92,7 @@ impl Repository for AuthorRepo {
         }
     }
 
-    async fn add(&self, new_item: Self::NewItem) -> Result<Self::Item, result::Error> {
+    async fn add<'a>(&self, new_item: Self::NewItem<'a>) -> Result<(), Error> {
         use crate::data::models::schema::authors::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -117,7 +124,7 @@ impl Repository for AuthorRepo {
         }
     }
 
-    async fn update(&self, id: Self::Id, updated_item: Self::Form) -> Result<(), result::Error> {
+    async fn update<'a>(&self, id: Self::Id, updated_item: Self::Form<'a>) -> Result<(), Error> {
         use crate::data::models::schema::authors::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -149,7 +156,7 @@ impl Repository for AuthorRepo {
         }
     }
 
-    async fn delete(&self, id: Self::Id) -> Result<(), result::Error> {
+    async fn delete(&self, id: Self::Id) -> Result<(), Error> {
         use crate::data::models::schema::authors::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {

@@ -1,5 +1,4 @@
 use diesel::prelude::*;
-use diesel::query_dsl::methods::FilterDsl;
 use diesel::result::{self, DatabaseErrorKind, Error};
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, RunQueryDsl};
@@ -16,7 +15,7 @@ use crate::data::{
 pub struct BookRepo;
 
 impl BookRepo {
-    pub fn new() -> Self {
+    pub async fn new() -> Self {
         BookRepo
     }
 
@@ -66,8 +65,8 @@ impl BookRepo {
 #[async_trait]
 impl Repository for BookRepo {
     type Item = Books;
-    type NewItem = NewBook<'static>;
-    type Form = UpdateBook<'static>;
+    type NewItem<'a> = NewBook<'a>;
+    type Form<'a> = UpdateBook<'a>;
     type Id = i32;
 
     async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, result::Error> {
@@ -108,7 +107,7 @@ impl Repository for BookRepo {
         }
     }
 
-    async fn add(&self, new_item: Self::NewItem) -> Result<Self::Item, result::Error> {
+    async fn add<'a>(&self, new_item: Self::NewItem<'a>) -> Result<(), result::Error> {
         use crate::data::models::schema::books::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -121,27 +120,26 @@ impl Repository for BookRepo {
         let db_lock = lock_db();
         let _guard: MutexGuard<()> = db_lock.lock().await;
 
-        conn.transaction(|connection| {
-            async move {
-                diesel::insert_into(books)
-                    .values(&new_item)
-                    .execute(connection)
-                    .await?;
+        match conn
+            .transaction(|connection| {
+                async move {
+                    diesel::insert_into(books)
+                        .values(new_item)
+                        .execute(connection)
+                        .await?;
 
-                // Fetch the inserted book (best-effort: get most recent)
-                let inserted = books
-                    .order(book_id.desc())
-                    .first::<Books>(connection)
-                    .await?;
-                
-                Ok(inserted)
-            }
-            .scope_boxed()
-        })
-        .await
+                    Ok(())
+                }
+                .scope_boxed()
+            })
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e),
+        }
     }
 
-    async fn update(&self, id: Self::Id, updated_item: Self::Form) -> Result<(), result::Error> {
+    async fn update<'a>(&self, id: Self::Id, updated_item: Self::Form<'a>) -> Result<(), result::Error> {
         use crate::data::models::schema::books::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -154,18 +152,23 @@ impl Repository for BookRepo {
         let db_lock = lock_db();
         let _guard: MutexGuard<()> = db_lock.lock().await;
 
-        conn.transaction(|connection| {
-            async move {
-                diesel::update(books.filter(book_id.eq(id)))
-                    .set(&updated_item)
-                    .execute(connection)
-                    .await?;
+        match conn
+            .transaction(|connection| {
+                async move {
+                    diesel::update(books.filter(book_id.eq(id)))
+                        .set(updated_item)
+                        .execute(connection)
+                        .await?;
 
-                Ok(())
-            }
-            .scope_boxed()
-        })
-        .await
+                    Ok(())
+                }
+                .scope_boxed()
+            })
+            .await
+        {
+            Ok(book) => Ok(book),
+            Err(e) => Err(e),
+        }
     }
 
     async fn delete(&self, id: Self::Id) -> Result<(), result::Error> {
@@ -181,15 +184,20 @@ impl Repository for BookRepo {
         let db_lock = lock_db();
         let _guard: MutexGuard<()> = db_lock.lock().await;
 
-        conn.transaction(|connection| {
-            async move {
-                diesel::delete(books.filter(book_id.eq(id)))
-                    .execute(connection)
-                    .await?;
-                Ok(())
-            }
-            .scope_boxed()
-        })
-        .await
+        match conn
+            .transaction(|connection| {
+                async move {
+                    diesel::delete(books.filter(book_id.eq(id)))
+                        .execute(connection)
+                        .await?;
+                    Ok(())
+                }
+                .scope_boxed()
+            })
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e),
+        }
     }
 }

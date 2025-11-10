@@ -18,7 +18,7 @@ use crate::data::{
 pub struct UserLibraryRepo;
 
 impl UserLibraryRepo {
-    pub fn new() -> Self {
+    pub async fn new() -> Self {
         UserLibraryRepo
     }
 
@@ -79,8 +79,8 @@ impl UserLibraryRepo {
 #[async_trait]
 impl Repository for UserLibraryRepo {
     type Item = UserLibrary;
-    type NewItem = NewUserLibrary;
-    type Form = UserLibrary;  // No separate update form needed
+    type NewItem<'a> = NewUserLibrary;
+    type Form<'a> = UserLibrary;  // No separate update form needed
     type Id = (i32, i32);  // Tuple: (user_id, book_id)
 
     async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, result::Error> {
@@ -93,11 +93,11 @@ impl Repository for UserLibraryRepo {
             )
         })?;
 
-        return match user_library.load::<Self::Item>(&mut conn).await {
+        match user_library.load::<Self::Item>(&mut conn).await {
             Ok(value) => Ok(Some(value)),
             Err(result::Error::NotFound) => Ok(None),
             Err(e) => Err(e),
-        };
+        }
     }
 
     async fn get_by_id(&self, id: Self::Id) -> Result<Option<Self::Item>, result::Error> {
@@ -110,7 +110,7 @@ impl Repository for UserLibraryRepo {
             )
         })?;
 
-        return match user_library
+        match user_library
             .filter(user_id.eq(id.0).and(book_id.eq(id.1)))
             .first::<UserLibrary>(&mut conn)
             .await
@@ -118,10 +118,10 @@ impl Repository for UserLibraryRepo {
             Ok(value) => Ok(Some(value)),
             Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),
-        };
+        }
     }
 
-    async fn add(&self, new_item: Self::NewItem) -> Result<Self::Item, result::Error> {
+    async fn add<'a>(&self, new_item: Self::NewItem<'a>) -> Result<(), result::Error> {
         use crate::data::models::schema::user_library::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -134,27 +134,26 @@ impl Repository for UserLibraryRepo {
         let db_lock = lock_db();
         let _guard: MutexGuard<()> = db_lock.lock().await;
 
-        conn.transaction(|connection| {
-            async move {
-                diesel::insert_into(user_library)
-                    .values(&new_item)
-                    .execute(connection)
-                    .await?;
+        match conn
+            .transaction(|connection| {
+                async move {
+                    diesel::insert_into(user_library)
+                        .values(new_item)
+                        .execute(connection)
+                        .await?;
 
-                // Fetch the inserted entry
-                let inserted = user_library
-                    .filter(user_id.eq(new_item.user_id).and(book_id.eq(new_item.book_id)))
-                    .first::<UserLibrary>(connection)
-                    .await?;
-                
-                Ok(inserted)
-            }
-            .scope_boxed()
-        })
-        .await
+                    Ok(())
+                }
+                .scope_boxed()
+            })
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e),
+        }
     }
 
-    async fn update(&self, _updated_item: Self::Form) -> Result<(), result::Error> {
+    async fn update<'a>(&self, _id: Self::Id, _updated_item: Self::Form<'a>) -> Result<(), result::Error> {
         // Junction tables typically don't support updates - delete and re-add instead
         // If you need to update added_at, you would need a different approach
         Err(Error::NotFound)
@@ -173,17 +172,22 @@ impl Repository for UserLibraryRepo {
         let db_lock = lock_db();
         let _guard: MutexGuard<()> = db_lock.lock().await;
 
-        conn.transaction(|connection| {
-            async move {
-                diesel::delete(
-                    user_library.filter(user_id.eq(id.0).and(book_id.eq(id.1)))
-                )
-                .execute(connection)
-                .await?;
-                Ok(())
-            }
-            .scope_boxed()
-        })
-        .await
+        match conn
+            .transaction(|connection| {
+                async move {
+                    diesel::delete(
+                        user_library.filter(user_id.eq(id.0).and(book_id.eq(id.1)))
+                    )
+                    .execute(connection)
+                    .await?;
+                    Ok(())
+                }
+                .scope_boxed()
+            })
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e),
+        }
     }
 }

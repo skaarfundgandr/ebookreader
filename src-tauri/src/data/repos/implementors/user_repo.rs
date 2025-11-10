@@ -15,7 +15,7 @@ use crate::data::{
 pub struct UserRepo;
 
 impl UserRepo {
-    pub fn new() -> Self {
+    pub async fn new() -> Self {
         UserRepo
     }
 
@@ -65,8 +65,8 @@ impl UserRepo {
 #[async_trait]
 impl Repository for UserRepo {
     type Item = Users;
-    type NewItem = NewUser<'static>;
-    type Form = UpdateUser<'static>;
+    type NewItem<'a> = NewUser<'a>;
+    type Form<'a> = UpdateUser<'a>;
     type Id = i32;
 
     async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, result::Error> {
@@ -79,11 +79,11 @@ impl Repository for UserRepo {
             )
         })?;
 
-        return match users.load::<Self::Item>(&mut conn).await {
+        match users.load::<Self::Item>(&mut conn).await {
             Ok(value) => Ok(Some(value)),
             Err(result::Error::NotFound) => Ok(None),
             Err(e) => Err(e),
-        };
+        }
     }
 
     async fn get_by_id(&self, id: Self::Id) -> Result<Option<Self::Item>, result::Error> {
@@ -96,7 +96,7 @@ impl Repository for UserRepo {
             )
         })?;
 
-        return match users
+        match users
             .filter(user::user_id.eq(id))
             .first::<Users>(&mut conn)
             .await
@@ -104,10 +104,10 @@ impl Repository for UserRepo {
             Ok(value) => Ok(Some(value)),
             Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),
-        };
+        }
     }
 
-    async fn add(&self, new_item: Self::NewItem) -> Result<Self::Item, result::Error> {
+    async fn add<'a>(&self, new_item: Self::NewItem<'a>) -> Result<(), result::Error> {
         use crate::data::models::schema::users::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -120,27 +120,26 @@ impl Repository for UserRepo {
         let db_lock = lock_db();
         let _guard: MutexGuard<()> = db_lock.lock().await;
 
-        conn.transaction(|connection| {
-            async move {
-                diesel::insert_into(users)
-                    .values(&new_item)
-                    .execute(connection)
-                    .await?;
+        match conn
+            .transaction(|connection| {
+                async move {
+                    diesel::insert_into(users)
+                        .values(new_item)
+                        .execute(connection)
+                        .await?;
 
-                // Fetch the inserted user (best-effort: get most recent)
-                let inserted = users
-                    .order(user_id.desc())
-                    .first::<Users>(connection)
-                    .await?;
-                
-                Ok(inserted)
-            }
-            .scope_boxed()
-        })
-        .await
+                    Ok(())
+                }
+                .scope_boxed()
+            })
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e),
+        }
     }
 
-    async fn update(&self, id: Self::Id, updated_item: Self::Form) -> Result<(), result::Error> {
+    async fn update<'a>(&self, id: Self::Id, updated_item: Self::Form<'a>) -> Result<(), result::Error> {
         use crate::data::models::schema::users::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -153,18 +152,23 @@ impl Repository for UserRepo {
         let db_lock = lock_db();
         let _guard: MutexGuard<()> = db_lock.lock().await;
 
-        conn.transaction(|connection| {
-            async move {
-                diesel::update(users.filter(user_id.eq(id)))
-                    .set(&updated_item)
-                    .execute(connection)
-                    .await?;
+        match conn
+            .transaction(|connection| {
+                async move {
+                    diesel::update(users.filter(user_id.eq(id)))
+                        .set(updated_item)
+                        .execute(connection)
+                        .await?;
 
-                Ok(())
-            }
-            .scope_boxed()
-        })
-        .await
+                    Ok(())
+                }
+                .scope_boxed()
+            })
+            .await
+        {
+            Ok(user) => Ok(user),
+            Err(e) => Err(e),
+        }
     }
 
     async fn delete(&self, id: Self::Id) -> Result<(), result::Error> {
@@ -180,16 +184,21 @@ impl Repository for UserRepo {
         let db_lock = lock_db();
         let _guard: MutexGuard<()> = db_lock.lock().await;
 
-        conn.transaction(|connection| {
-            async move {
-                diesel::delete(users.filter(user_id.eq(id)))
-                    .execute(connection)
-                    .await?;
-                Ok(())
-            }
-            .scope_boxed()
-        })
-        .await
+        match conn
+            .transaction(|connection| {
+                async move {
+                    diesel::delete(users.filter(user_id.eq(id)))
+                        .execute(connection)
+                        .await?;
+                    Ok(())
+                }
+                .scope_boxed()
+            })
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e),
+        }
     }
 }
  
