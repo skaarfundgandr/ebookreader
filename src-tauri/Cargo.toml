@@ -33,6 +33,7 @@ dotenvy = "0.15.7"
 axum = "0.8.4"
 walkdir = "2.5.0"
 async-trait = "0.1.89"
+argon2 = { version = "0.5.3", features = ["rand", "std"] }
 
 # 👇 Force bundled SQLite
 [dependencies.libsqlite3-sys]
