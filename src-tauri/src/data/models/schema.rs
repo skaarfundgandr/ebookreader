@@ -35,6 +35,16 @@ diesel::table! {
 }
 
 diesel::table! {
+    libraries (library_id) {
+        library_id -> Integer,
+        name -> Text,
+        path -> Text,
+        added_by -> Nullable<Integer>,
+        added_at -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
     publishers (publisher_id) {
         publisher_id -> Integer,
         name -> Text,
@@ -61,6 +71,7 @@ diesel::table! {
 
 diesel::joinable!(book_authors -> authors (author_id));
 diesel::joinable!(books -> publishers (publisher_id));
+diesel::joinable!(libraries -> users (added_by));
 diesel::joinable!(user_library -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
@@ -68,6 +79,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     book_authors,
     books,
     configuration,
+    libraries,
     publishers,
     user_library,
     users,
