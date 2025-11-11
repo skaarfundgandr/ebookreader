@@ -1,18 +1,14 @@
+use async_trait::async_trait;
 use diesel::prelude::*;
 use diesel::result::{self, DatabaseErrorKind, Error};
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, RunQueryDsl};
-use async_trait::async_trait;
 use tokio::sync::MutexGuard;
 
 use crate::data::{
-    models::{
-        book_authors::BookAuthors,
-        authors::Authors,
-        books::Books,
-    },
-    repos::traits::repository::Repository,
     database::{connect_from_pool, lock_db},
+    models::{authors::Authors, book_authors::BookAuthors, books::Books},
+    repos::traits::repository::Repository,
 };
 
 // TODO: Test this
@@ -23,7 +19,10 @@ impl BookAuthorRepo {
         BookAuthorRepo
     }
 
-    pub async fn get_authors_by_book(&self, bid: i32) -> Result<Option<Vec<Authors>>, result::Error> {
+    pub async fn get_authors_by_book(
+        &self,
+        bid: i32,
+    ) -> Result<Option<Vec<Authors>>, result::Error> {
         use crate::data::models::schema::{authors, book_authors};
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -82,9 +81,9 @@ impl BookAuthorRepo {
 #[async_trait]
 impl Repository for BookAuthorRepo {
     type Item = BookAuthors;
-    type NewItem<'a> = BookAuthors;  // Insertable is same as the main struct
-    type Form<'a> = BookAuthors;      // No update form needed for junction tables
-    type Id = (i32, i32);  // Tuple: (book_id, author_id)
+    type NewItem<'a> = BookAuthors; // Insertable is same as the main struct
+    type Form<'a> = BookAuthors; // No update form needed for junction tables
+    type Id = (i32, i32); // Tuple: (book_id, author_id)
 
     async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, result::Error> {
         use crate::data::models::schema::book_authors::dsl::*;
@@ -156,7 +155,11 @@ impl Repository for BookAuthorRepo {
         }
     }
 
-    async fn update<'a>(&self, _id: Self::Id, _updated_item: Self::Form<'a>) -> Result<(), result::Error> {
+    async fn update<'a>(
+        &self,
+        _id: Self::Id,
+        _updated_item: Self::Form<'a>,
+    ) -> Result<(), result::Error> {
         // Junction tables typically don't support updates - delete and re-add instead
         Err(Error::NotFound)
     }
@@ -177,11 +180,9 @@ impl Repository for BookAuthorRepo {
         match conn
             .transaction(|connection| {
                 async move {
-                    diesel::delete(
-                        book_authors.filter(book_id.eq(id.0).and(author_id.eq(id.1)))
-                    )
-                    .execute(connection)
-                    .await?;
+                    diesel::delete(book_authors.filter(book_id.eq(id.0).and(author_id.eq(id.1))))
+                        .execute(connection)
+                        .await?;
                     Ok(())
                 }
                 .scope_boxed()

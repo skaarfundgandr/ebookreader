@@ -1,14 +1,14 @@
+use async_trait::async_trait;
 use diesel::prelude::*;
 use diesel::result::{self, DatabaseErrorKind, Error};
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, RunQueryDsl};
-use async_trait::async_trait;
 use tokio::sync::MutexGuard;
 
 use crate::data::{
-    models::users::{Users, NewUser, UpdateUser},
-    repos::traits::repository::Repository,
     database::{connect_from_pool, lock_db},
+    models::users::{NewUser, UpdateUser, Users},
+    repos::traits::repository::Repository,
 };
 
 // TODO: Test this
@@ -19,7 +19,10 @@ impl UserRepo {
         UserRepo
     }
 
-    pub async fn search_by_username(&self, username_query: &str) -> Result<Option<Users>, result::Error> {
+    pub async fn search_by_username(
+        &self,
+        username_query: &str,
+    ) -> Result<Option<Users>, result::Error> {
         use crate::data::models::schema::users::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -139,7 +142,11 @@ impl Repository for UserRepo {
         }
     }
 
-    async fn update<'a>(&self, id: Self::Id, updated_item: Self::Form<'a>) -> Result<(), result::Error> {
+    async fn update<'a>(
+        &self,
+        id: Self::Id,
+        updated_item: Self::Form<'a>,
+    ) -> Result<(), result::Error> {
         use crate::data::models::schema::users::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -201,4 +208,3 @@ impl Repository for UserRepo {
         }
     }
 }
- 

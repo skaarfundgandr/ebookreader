@@ -1,14 +1,14 @@
+use async_trait::async_trait;
 use diesel::prelude::*;
 use diesel::result::{self, DatabaseErrorKind, Error};
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, RunQueryDsl};
-use async_trait::async_trait;
 use tokio::sync::MutexGuard;
 
 use crate::data::{
+    database::{connect_from_pool, lock_db},
     models::books::{Books, NewBook, UpdateBook},
     repos::traits::repository::Repository,
-    database::{connect_from_pool, lock_db},
 };
 
 // TODO: Test this
@@ -19,7 +19,10 @@ impl BookRepo {
         BookRepo
     }
 
-    pub async fn search_by_title(&self, title_query: &str) -> Result<Option<Vec<Books>>, result::Error> {
+    pub async fn search_by_title(
+        &self,
+        title_query: &str,
+    ) -> Result<Option<Vec<Books>>, result::Error> {
         use crate::data::models::schema::books::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -40,7 +43,10 @@ impl BookRepo {
         };
     }
 
-    pub async fn search_by_publisher(&self, pub_id: i32) -> Result<Option<Vec<Books>>, result::Error> {
+    pub async fn search_by_publisher(
+        &self,
+        pub_id: i32,
+    ) -> Result<Option<Vec<Books>>, result::Error> {
         use crate::data::models::schema::books::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -139,7 +145,11 @@ impl Repository for BookRepo {
         }
     }
 
-    async fn update<'a>(&self, id: Self::Id, updated_item: Self::Form<'a>) -> Result<(), result::Error> {
+    async fn update<'a>(
+        &self,
+        id: Self::Id,
+        updated_item: Self::Form<'a>,
+    ) -> Result<(), result::Error> {
         use crate::data::models::schema::books::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {

@@ -1,17 +1,17 @@
+use async_trait::async_trait;
 use diesel::prelude::*;
 use diesel::result::{self, DatabaseErrorKind, Error};
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, RunQueryDsl};
-use async_trait::async_trait;
 use tokio::sync::MutexGuard;
 
 use crate::data::{
+    database::{connect_from_pool, lock_db},
     models::{
-        user_library::{UserLibrary, NewUserLibrary},
         books::Books,
+        user_library::{NewUserLibrary, UserLibrary},
     },
     repos::traits::repository::Repository,
-    database::{connect_from_pool, lock_db},
 };
 
 // TODO: Test this
@@ -22,7 +22,10 @@ impl UserLibraryRepo {
         UserLibraryRepo
     }
 
-    pub async fn get_library_by_user(&self, uid: i32) -> Result<Option<Vec<UserLibrary>>, result::Error> {
+    pub async fn get_library_by_user(
+        &self,
+        uid: i32,
+    ) -> Result<Option<Vec<UserLibrary>>, result::Error> {
         use crate::data::models::schema::user_library::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -80,8 +83,8 @@ impl UserLibraryRepo {
 impl Repository for UserLibraryRepo {
     type Item = UserLibrary;
     type NewItem<'a> = NewUserLibrary;
-    type Form<'a> = UserLibrary;  // No separate update form needed
-    type Id = (i32, i32);  // Tuple: (user_id, book_id)
+    type Form<'a> = UserLibrary; // No separate update form needed
+    type Id = (i32, i32); // Tuple: (user_id, book_id)
 
     async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, result::Error> {
         use crate::data::models::schema::user_library::dsl::*;
@@ -153,7 +156,11 @@ impl Repository for UserLibraryRepo {
         }
     }
 
-    async fn update<'a>(&self, _id: Self::Id, _updated_item: Self::Form<'a>) -> Result<(), result::Error> {
+    async fn update<'a>(
+        &self,
+        _id: Self::Id,
+        _updated_item: Self::Form<'a>,
+    ) -> Result<(), result::Error> {
         // Junction tables typically don't support updates - delete and re-add instead
         // If you need to update added_at, you would need a different approach
         Err(Error::NotFound)
@@ -175,11 +182,9 @@ impl Repository for UserLibraryRepo {
         match conn
             .transaction(|connection| {
                 async move {
-                    diesel::delete(
-                        user_library.filter(user_id.eq(id.0).and(book_id.eq(id.1)))
-                    )
-                    .execute(connection)
-                    .await?;
+                    diesel::delete(user_library.filter(user_id.eq(id.0).and(book_id.eq(id.1))))
+                        .execute(connection)
+                        .await?;
                     Ok(())
                 }
                 .scope_boxed()

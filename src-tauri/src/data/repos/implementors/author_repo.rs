@@ -1,31 +1,23 @@
-use diesel::prelude::*;
-use diesel::result::{Error, DatabaseErrorKind};
-use diesel_async::{
-    AsyncConnection,
-    RunQueryDsl,
-    scoped_futures::ScopedFutureExt
-};
-use tokio::sync::MutexGuard;
 use async_trait::async_trait;
+use diesel::prelude::*;
+use diesel::result::{DatabaseErrorKind, Error};
+use diesel_async::{scoped_futures::ScopedFutureExt, AsyncConnection, RunQueryDsl};
+use tokio::sync::MutexGuard;
 
 use crate::data::{
-    models::authors::{
-        Authors,
-        NewAuthor,
-        AuthorForm
-    },
-    repos::traits::repository::Repository,
     database::{connect_from_pool, lock_db},
+    models::authors::{AuthorForm, Authors, NewAuthor},
+    repos::traits::repository::Repository,
 };
 // TODO: Test this
 pub struct AuthorRepo;
 
 impl AuthorRepo {
-    async fn new() -> Self {
+    pub async fn new() -> Self {
         AuthorRepo
     }
 
-    async fn search_by_name(&self, name_query: &str) -> Result<Option<Vec<Authors>>, Error> {
+    pub async fn search_by_name(&self, name_query: &str) -> Result<Option<Vec<Authors>>, Error> {
         use crate::data::models::schema::authors::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
