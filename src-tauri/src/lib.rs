@@ -7,6 +7,3 @@ pub mod opds;
 pub mod parsers;
 pub mod services;
 pub mod utils;
-
-#[cfg(test)]
-mod tests;
