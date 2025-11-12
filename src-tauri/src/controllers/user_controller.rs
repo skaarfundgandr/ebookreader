@@ -6,11 +6,21 @@ use axum::{
     Json,
 };
 
-use crate::controllers::dto::user_dto::*;
-use crate::data::repos::user_repo;
+use crate::{controllers::dto::user_dto::*, data::repos::implementors::user_repo::UserRepo};
+use crate::data::repos::traits::repository::Repository;
 
 pub async fn create_user(Json(user): Json<NewUserDTO>) -> impl IntoResponse {
-    match user_repo::create_user(user).await {
+    let repo = UserRepo::new().await;
+    
+    use crate::data::models::users::NewUser;
+    let new_user = NewUser {
+        username: &user.username,
+        email: &user.email,
+        password_hash: &user.password_hash,
+        created_at: user.created_at.as_deref(),
+    };
+    
+    match repo.add(new_user).await {
         Ok(_) => (),
         Err(e) => {
             eprintln!("Error creating user: {}", e);
@@ -28,7 +38,8 @@ pub async fn create_user(Json(user): Json<NewUserDTO>) -> impl IntoResponse {
 }
 
 pub async fn list_users() -> Json<Vec<UserDTO>> {
-    let users = match user_repo::get_all_users().await {
+    let repo = UserRepo::new().await;
+    let users = match repo.get_all().await {
         Ok(Some(user_list)) => user_list
             .into_iter()
             .map(|u| UserDTO {
@@ -62,7 +73,8 @@ pub async fn get_user(
         }
     };
 
-    return match user_repo::get_user_by_id(user_id).await {
+    let repo = UserRepo::new().await;
+    return match repo.get_by_id(user_id).await {
         Ok(Some(user)) => {
             let user_response = UserDTO {
                 username: user.username,
@@ -90,4 +102,3 @@ pub async fn get_user(
         }
     };
 }
-// TODO: Add update_user and delete_user handlers and add authentication/authorization
