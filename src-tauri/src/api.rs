@@ -10,6 +10,8 @@ pub fn start() {
         .route("/create_user", post(user_controller::create_user))
         .route("/list_users", get(user_controller::list_users))
         .route("/user", get(user_controller::get_user))
+        // .route("/login", post(auth_controller::login))  // TODO: Implement login function
+        // .route("/logout", post(auth_controller::logout)) // TODO: Implement logout function
         .with_state(());
 
     tokio::spawn(async move {

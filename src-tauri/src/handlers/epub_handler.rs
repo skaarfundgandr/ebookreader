@@ -16,4 +16,4 @@ pub async fn scan_epubs<P: AsRef<Path> + Send + 'static>(dir: P) {
     }
 }
 
-// TODO: Send scanned epubs to database or further processing
+// TODO: Parse metadata from found EPUB files and store in database

@@ -1,12 +1,10 @@
 // TODO: Implement hashing and salting for passwords here
-use argon2::{
-    Argon2, PasswordHash, PasswordHasher, PasswordVerifier
-};
+use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 
-use argon2::password_hash::{self, SaltString, rand_core::OsRng};
+use argon2::password_hash::{self, rand_core::OsRng, SaltString};
 
 pub struct AuthenticationService;
-
+// TODO: Add JWT token generation and verification methods
 impl AuthenticationService {
     pub fn new() -> Self {
         AuthenticationService
@@ -16,15 +14,17 @@ impl AuthenticationService {
         let argon2 = Argon2::default();
 
         let salt = SaltString::generate(&mut OsRng);
-        match argon2
-            .hash_password(password.as_bytes(), &salt)
-            {
-                Ok(hash) => Ok(hash.to_string()),
-                Err(e) => Err(e),
-            }
+        match argon2.hash_password(password.as_bytes(), &salt) {
+            Ok(hash) => Ok(hash.to_string()),
+            Err(e) => Err(e),
+        }
     }
 
-    pub fn verify_password(&self,password: &str, hash: &str) -> Result<bool, password_hash::Error> {
+    pub fn verify_password(
+        &self,
+        password: &str,
+        hash: &str,
+    ) -> Result<bool, password_hash::Error> {
         let parsed_hash = PasswordHash::new(hash)?;
         let argon2 = Argon2::default();
 
@@ -33,5 +33,15 @@ impl AuthenticationService {
             Err(password_hash::Error::Password) => Ok(false),
             Err(e) => Err(e),
         }
+    }
+
+    pub fn generate_jwt(&self, _user_id: i32) -> String {
+        // TODO: Implement JWT token generation
+        unimplemented!()
+    }
+
+    pub fn verify_jwt(&self, _token: &str) -> bool {
+        // TODO: Implement JWT token verification
+        unimplemented!()
     }
 }

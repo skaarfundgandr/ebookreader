@@ -6,12 +6,12 @@ use axum::{
     Json,
 };
 
-use crate::{controllers::dto::user_dto::*, data::repos::implementors::user_repo::UserRepo};
 use crate::data::repos::traits::repository::Repository;
-
+use crate::{controllers::dto::user_dto::*, data::repos::implementors::user_repo::UserRepo};
+// TODO: Rename to register user
 pub async fn create_user(Json(user): Json<NewUserDTO>) -> impl IntoResponse {
     let repo = UserRepo::new().await;
-    
+
     use crate::data::models::users::NewUser;
     let new_user = NewUser {
         username: &user.username,
@@ -19,7 +19,7 @@ pub async fn create_user(Json(user): Json<NewUserDTO>) -> impl IntoResponse {
         password_hash: &user.password_hash,
         created_at: user.created_at.as_deref(),
     };
-    
+    // TODO: hash password before storing
     match repo.add(new_user).await {
         Ok(_) => (),
         Err(e) => {
