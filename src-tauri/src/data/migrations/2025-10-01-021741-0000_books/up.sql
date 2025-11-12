@@ -7,6 +7,7 @@ CREATE TABLE `books` (
     `isbn` TEXT,
     `file_type` TEXT,
     `file_path` TEXT,
+    `cover_image_path` TEXT,
     `added_at` TEXT DEFAULT (datetime('now')),
     FOREIGN KEY (`publisher_id`) REFERENCES `publishers`(`publisher_id`) ON DELETE SET NULL
 );

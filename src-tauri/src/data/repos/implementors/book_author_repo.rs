@@ -66,6 +66,7 @@ impl BookAuthorRepo {
                 books::isbn,
                 books::file_type,
                 books::file_path,
+                books::cover_image_path,
                 books::added_at,
             ))
             .load::<Books>(&mut conn)
