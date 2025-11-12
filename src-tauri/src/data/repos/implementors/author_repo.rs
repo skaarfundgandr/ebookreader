@@ -9,7 +9,7 @@ use crate::data::{
     models::authors::{AuthorForm, Authors, NewAuthor},
     repos::traits::repository::Repository,
 };
-// TODO: Test this
+
 pub struct AuthorRepo;
 
 impl AuthorRepo {

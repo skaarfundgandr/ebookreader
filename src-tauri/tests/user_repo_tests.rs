@@ -6,13 +6,24 @@ use stellaron_lib::data::models::users::NewUser;
 use stellaron_lib::data::repos::implementors::user_repo::UserRepo;
 use stellaron_lib::data::repos::traits::repository::Repository;
 
-/// Helper function to clear the users table before each test
+/// Helper function to clear the tables before each test
 async fn setup() -> Result<(), Error> {
     let mut conn = database::connect_from_pool()
         .await
         .expect("Failed to get connection from pool for test setup");
 
+    use stellaron_lib::data::models::schema::authors::dsl::*;
+    use stellaron_lib::data::models::schema::book_authors::dsl::*;
+    use stellaron_lib::data::models::schema::books::dsl::*;
+    use stellaron_lib::data::models::schema::publishers::dsl::*;
+    use stellaron_lib::data::models::schema::user_library::dsl::*;
     use stellaron_lib::data::models::schema::users::dsl::*;
+
+    diesel::delete(book_authors).execute(&mut conn).await?;
+    diesel::delete(user_library).execute(&mut conn).await?;
+    diesel::delete(books).execute(&mut conn).await?;
+    diesel::delete(authors).execute(&mut conn).await?;
+    diesel::delete(publishers).execute(&mut conn).await?;
     diesel::delete(users).execute(&mut conn).await?;
 
     Ok(())

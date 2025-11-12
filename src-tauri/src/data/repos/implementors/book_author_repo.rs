@@ -11,7 +11,6 @@ use crate::data::{
     repos::traits::repository::Repository,
 };
 
-// TODO: Test this
 pub struct BookAuthorRepo;
 
 impl BookAuthorRepo {
