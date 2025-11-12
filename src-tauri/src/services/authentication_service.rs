@@ -9,7 +9,7 @@ impl AuthenticationService {
     pub fn new() -> Self {
         AuthenticationService
     }
-
+    // TODO: Test hashing and verifying passwords
     pub fn hash_password(&self, password: &str) -> Result<String, password_hash::Error> {
         let argon2 = Argon2::default();
 
@@ -33,6 +33,12 @@ impl AuthenticationService {
             Err(password_hash::Error::Password) => Ok(false),
             Err(e) => Err(e),
         }
+    }
+
+    pub fn hash_and_verify(&self, password: &str) -> Result<String, password_hash::Error> {
+        let hash = self.hash_password(password)?;
+        self.verify_password(password, &hash)?;
+        Ok(hash)
     }
 
     pub fn generate_jwt(&self, _user_id: i32) -> String {

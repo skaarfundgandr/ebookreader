@@ -6,20 +6,21 @@ use axum::{
     Json,
 };
 
-use crate::data::repos::traits::repository::Repository;
+use crate::{data::repos::traits::repository::Repository, services::authentication_service::AuthenticationService};
 use crate::{controllers::dto::user_dto::*, data::repos::implementors::user_repo::UserRepo};
-// TODO: Rename to register user
+// TODO: Test this endpoint
 pub async fn create_user(Json(user): Json<NewUserDTO>) -> impl IntoResponse {
+    let auth = AuthenticationService::new();
     let repo = UserRepo::new().await;
 
     use crate::data::models::users::NewUser;
     let new_user = NewUser {
         username: &user.username,
         email: &user.email,
-        password_hash: &user.password_hash,
+        password_hash: &auth.hash_and_verify(&user.password).unwrap(),
         created_at: user.created_at.as_deref(),
     };
-    // TODO: hash password before storing
+    
     match repo.add(new_user).await {
         Ok(_) => (),
         Err(e) => {
@@ -36,7 +37,7 @@ pub async fn create_user(Json(user): Json<NewUserDTO>) -> impl IntoResponse {
         .body(Body::from("User created"))
         .unwrap();
 }
-
+// List all users - for testing purposes
 pub async fn list_users() -> Json<Vec<UserDTO>> {
     let repo = UserRepo::new().await;
     let users = match repo.get_all().await {
@@ -57,12 +58,12 @@ pub async fn list_users() -> Json<Vec<UserDTO>> {
 
     return Json(users);
 }
-
+// For testing purposes, get user by id via query param
 pub async fn get_user(
     Query(params): Query<std::collections::HashMap<String, String>>,
 ) -> impl IntoResponse {
     // Extract user_id from query params
-    let user_id = match params.get("user_id").and_then(|id| id.parse::<i32>().ok()) {
+    let username = match params.get("username").and_then(|id| id.parse::<String>().ok()) {
         Some(id) => id,
         None => {
             return Response::builder()
@@ -74,7 +75,7 @@ pub async fn get_user(
     };
 
     let repo = UserRepo::new().await;
-    return match repo.get_by_id(user_id).await {
+    return match repo.search_by_username(&username).await {
         Ok(Some(user)) => {
             let user_response = UserDTO {
                 username: user.username,

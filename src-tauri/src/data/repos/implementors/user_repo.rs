@@ -21,7 +21,7 @@ impl UserRepo {
     pub async fn search_by_username(
         &self,
         username_query: &str,
-    ) -> Result<Option<Users>, result::Error> {
+    ) -> Result<Option<Users>, result::Error> { // TODO: Change to return a vec of users
         use crate::data::models::schema::users::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {

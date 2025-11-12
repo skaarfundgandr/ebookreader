@@ -7,7 +7,7 @@ use tokio::net::TcpListener;
 pub fn start() {
     let api: Router<()> = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
-        .route("/create_user", post(user_controller::create_user))
+        .route("/register", post(user_controller::create_user))
         .route("/list_users", get(user_controller::list_users))
         .route("/user", get(user_controller::get_user))
         // .route("/login", post(auth_controller::login))  // TODO: Implement login function
