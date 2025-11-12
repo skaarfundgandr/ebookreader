@@ -6,7 +6,11 @@ use serde::Deserialize;
 /// # Usage
 ///
 /// ```rust,ignore
-///
+/// #[derive(Deserialize)]
+/// struct MyStruct {
+///     #[serde(deserialize_with = "naive_datetime_from_str")]
+///     my_datetime: NaiveDateTime,
+/// }
 /// ```
 pub fn naive_datetime_from_str<'de, D>(deserializer: D) -> Result<NaiveDateTime, D::Error>
 where
