@@ -16,18 +16,18 @@ mod configuration_repo_tests {
     use diesel_async::RunQueryDsl;
 
     use crate::data::database;
-    use crate::data::repos::configuration_repo::{
-        get_all_configurations, get_book_path, set_book_path,
-    };
+    use crate::data::repos::implementors::library_repo::LibraryRepo;
+    use crate::data::repos::traits::repository::Repository;
+    use crate::data::models::libraries::NewLibrary;
 
-    /// Helper function to clear the configuration table before each test
+    /// Helper function to clear the libraries table before each test
     async fn setup() -> Result<(), Error> {
         let mut conn = database::connect_from_pool()
             .await
             .expect("Failed to get connection from pool for test setup");
 
-        use crate::data::models::schema::configuration::dsl::*;
-        diesel::delete(configuration).execute(&mut conn).await?;
+        use crate::data::models::schema::libraries::dsl::*;
+        diesel::delete(libraries).execute(&mut conn).await?;
 
         Ok(())
     }
@@ -35,77 +35,98 @@ mod configuration_repo_tests {
     #[tokio::test]
     #[serial_test::serial]
     async fn test_get_all_configurations_empty() {
-        // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
 
-        // Test get_all_configurations with empty table
-        let configurations = get_all_configurations()
+        let repo = LibraryRepo::new().await;
+        let libraries = repo.get_all()
             .await
-            .expect("Failed to get configurations");
+            .expect("Failed to get libraries");
 
-        // Should return Some with an empty vector
-        assert!(configurations.is_some());
-        assert_eq!(configurations.unwrap().len(), 0);
+        assert!(libraries.is_some());
+        assert_eq!(libraries.unwrap().len(), 0);
     }
 
     #[tokio::test]
     #[serial_test::serial]
     async fn test_set_and_get_book_path() {
-        // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
 
-        // Test setting a book path
+        let repo = LibraryRepo::new().await;
         let test_path = "/test/book/path";
-        let result = set_book_path(test_path).await;
+        let new_library = NewLibrary {
+            name: "Test Library",
+            path: test_path,
+            added_by: None,
+        };
+        
+        let result = repo.add(new_library).await;
         assert!(result.is_ok());
 
-        // Test getting the book path
-        let path = get_book_path().await.expect("Failed to get book path");
-        assert_eq!(path, Some(test_path.to_string()));
+        let libraries = repo.get_all().await.expect("Failed to get libraries");
+        assert!(libraries.is_some());
+        let libs = libraries.unwrap();
+        assert_eq!(libs.len(), 1);
+        assert_eq!(libs[0].path, test_path);
     }
 
     #[tokio::test]
     #[serial_test::serial]
     async fn test_get_all_configurations_with_data() {
-        // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
 
-        // Insert a test configuration directly
+        let repo = LibraryRepo::new().await;
         let test_path = "/another/test/path";
-        let result = set_book_path(test_path).await;
+        let new_library = NewLibrary {
+            name: "Another Library",
+            path: test_path,
+            added_by: None,
+        };
+        
+        let result = repo.add(new_library).await;
         assert!(result.is_ok());
 
-        // Test get_all_configurations with data
-        let configurations = get_all_configurations()
+        let libraries = repo.get_all()
             .await
-            .expect("Failed to get configurations");
+            .expect("Failed to get libraries");
 
-        // Should return Some with one configuration
-        assert!(configurations.is_some());
-        let configs = configurations.unwrap();
-        assert_eq!(configs.len(), 1);
-        assert_eq!(configs[0].book_path, Some(test_path.to_string()));
+        assert!(libraries.is_some());
+        let libs = libraries.unwrap();
+        assert_eq!(libs.len(), 1);
+        assert_eq!(libs[0].path, test_path);
     }
 
     #[tokio::test]
     #[serial_test::serial]
     async fn test_update_book_path() {
-        // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
 
-        // Insert initial book path
+        let repo = LibraryRepo::new().await;
         let initial_path = "/initial/path";
-        let result = set_book_path(initial_path).await;
-        assert!(result.is_ok());
+        let new_library = NewLibrary {
+            name: "Initial Library",
+            path: initial_path,
+            added_by: None,
+        };
+        
+        repo.add(new_library).await.expect("Failed to add library");
 
-        // Update the book path
+        let libraries = repo.get_all().await.expect("Failed to get libraries").unwrap();
+        let library_id = libraries[0].library_id;
+
         let updated_path = "/updated/path";
-        let result = set_book_path(updated_path).await;
+        use crate::data::models::libraries::UpdateLibrary;
+        let update = UpdateLibrary {
+            name: None,
+            path: Some(updated_path),
+            added_by: None,
+        };
+        
+        let result = repo.update(library_id, update).await;
         assert!(result.is_ok());
 
-        // Verify the update
-        let path = get_book_path().await.expect("Failed to get book path");
-        assert_eq!(path, Some(updated_path.to_string()));
+        let library = repo.get_by_id(library_id).await.expect("Failed to get library");
+        assert!(library.is_some());
+        assert_eq!(library.unwrap().path, updated_path);
     }
 }
 
@@ -114,11 +135,10 @@ mod user_repo_tests {
     use diesel::result::Error;
     use diesel_async::RunQueryDsl;
 
-    use crate::controllers::dto::user_dto::NewUserDTO;
     use crate::data::database;
-    use crate::data::repos::user_repo::{
-        create_user, get_all_users, get_user_by_id, get_user_by_username,
-    };
+    use crate::data::repos::implementors::user_repo::UserRepo;
+    use crate::data::repos::traits::repository::Repository;
+    use crate::data::models::users::NewUser;
 
     /// Helper function to clear the users table before each test
     async fn setup() -> Result<(), Error> {
@@ -138,23 +158,22 @@ mod user_repo_tests {
         email_val: &str,
         password_val: &str,
     ) -> Result<(), Error> {
-        let new_user = NewUserDTO {
-            username: username_val.to_string(),
-            email: email_val.to_string(),
-            password_hash: password_val.to_string(),
+        let repo = UserRepo::new().await;
+        let new_user = NewUser {
+            username: username_val,
+            email: email_val,
+            password_hash: password_val,
             created_at: None,
         };
 
-        create_user(new_user).await
+        repo.add(new_user).await
     }
 
     #[tokio::test]
     #[serial_test::serial]
     async fn test_create_user() {
-        // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
 
-        // Create a test user
         let username = "testuser";
         let email = "test@example.com";
         let password = "hashedpassword123";
@@ -162,8 +181,8 @@ mod user_repo_tests {
         let result = create_test_user(username, email, password).await;
         assert!(result.is_ok());
 
-        // Verify the user was created by getting all users
-        let users = get_all_users().await.expect("Failed to get users");
+        let repo = UserRepo::new().await;
+        let users = repo.get_all().await.expect("Failed to get users");
 
         assert!(users.is_some());
         let users_vec = users.unwrap();
@@ -176,13 +195,11 @@ mod user_repo_tests {
     #[tokio::test]
     #[serial_test::serial]
     async fn test_get_all_users_empty() {
-        // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
 
-        // Test get_all_users with empty table
-        let users = get_all_users().await.expect("Failed to get users");
+        let repo = UserRepo::new().await;
+        let users = repo.get_all().await.expect("Failed to get users");
 
-        // Should return Some with an empty vector
         assert!(users.is_some());
         assert_eq!(users.unwrap().len(), 0);
     }
@@ -190,10 +207,8 @@ mod user_repo_tests {
     #[tokio::test]
     #[serial_test::serial]
     async fn test_get_user_by_id() {
-        // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
 
-        // Create a test user
         let username = "testuser";
         let email = "test@example.com";
         let password = "hashedpassword123";
@@ -202,12 +217,11 @@ mod user_repo_tests {
             .await
             .expect("Failed to create test user");
 
-        // Get all users to find the ID
-        let users = get_all_users().await.expect("Failed to get users").unwrap();
+        let repo = UserRepo::new().await;
+        let users = repo.get_all().await.expect("Failed to get users").unwrap();
         let user_id = users[0].user_id;
 
-        // Test get_user_by_id
-        let user = get_user_by_id(user_id)
+        let user = repo.get_by_id(user_id)
             .await
             .expect("Failed to get user by id");
 
@@ -220,11 +234,10 @@ mod user_repo_tests {
     #[tokio::test]
     #[serial_test::serial]
     async fn test_get_user_by_id_nonexistent() {
-        // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
 
-        // Test get_user_by_id with nonexistent ID
-        let user = get_user_by_id(999)
+        let repo = UserRepo::new().await;
+        let user = repo.get_by_id(999)
             .await
             .expect("Failed to execute get_user_by_id");
 
@@ -234,10 +247,8 @@ mod user_repo_tests {
     #[tokio::test]
     #[serial_test::serial]
     async fn test_get_user_by_username() {
-        // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
 
-        // Create a test user
         let username = "uniqueuser";
         let email = "unique@example.com";
         let password = "uniquepass123";
@@ -246,8 +257,8 @@ mod user_repo_tests {
             .await
             .expect("Failed to create test user");
 
-        // Test get_user_by_username
-        let user = get_user_by_username(username)
+        let repo = UserRepo::new().await;
+        let user = repo.search_by_username(username)
             .await
             .expect("Failed to get user by username");
 
@@ -260,11 +271,10 @@ mod user_repo_tests {
     #[tokio::test]
     #[serial_test::serial]
     async fn test_get_user_by_username_nonexistent() {
-        // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
 
-        // Test get_user_by_username with nonexistent username
-        let user = get_user_by_username("nonexistentuser")
+        let repo = UserRepo::new().await;
+        let user = repo.search_by_username("nonexistentuser")
             .await
             .expect("Failed to execute get_user_by_username");
 
@@ -274,10 +284,8 @@ mod user_repo_tests {
     #[tokio::test]
     #[serial_test::serial]
     async fn test_get_all_users_multiple() {
-        // Setup: ensure table is empty
         setup().await.expect("Failed to set up test");
 
-        // Create multiple test users
         let usernames = ["user1", "user2", "user3"];
         let emails = [
             "user1@example.com",
@@ -292,14 +300,13 @@ mod user_repo_tests {
                 .expect("Failed to create test user");
         }
 
-        // Test get_all_users
-        let users = get_all_users().await.expect("Failed to get users");
+        let repo = UserRepo::new().await;
+        let users = repo.get_all().await.expect("Failed to get users");
 
         assert!(users.is_some());
         let users_vec = users.unwrap();
         assert_eq!(users_vec.len(), 3);
 
-        // Verify each user
         for i in 0..3 {
             let user = users_vec.iter().find(|u| u.username == usernames[i]);
             assert!(user.is_some());
