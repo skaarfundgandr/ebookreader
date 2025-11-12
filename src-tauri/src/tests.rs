@@ -16,9 +16,9 @@ mod configuration_repo_tests {
     use diesel_async::RunQueryDsl;
 
     use crate::data::database;
+    use crate::data::models::libraries::NewLibrary;
     use crate::data::repos::implementors::library_repo::LibraryRepo;
     use crate::data::repos::traits::repository::Repository;
-    use crate::data::models::libraries::NewLibrary;
 
     /// Helper function to clear the libraries table before each test
     async fn setup() -> Result<(), Error> {
@@ -38,9 +38,7 @@ mod configuration_repo_tests {
         setup().await.expect("Failed to set up test");
 
         let repo = LibraryRepo::new().await;
-        let libraries = repo.get_all()
-            .await
-            .expect("Failed to get libraries");
+        let libraries = repo.get_all().await.expect("Failed to get libraries");
 
         assert!(libraries.is_some());
         assert_eq!(libraries.unwrap().len(), 0);
@@ -58,7 +56,7 @@ mod configuration_repo_tests {
             path: test_path,
             added_by: None,
         };
-        
+
         let result = repo.add(new_library).await;
         assert!(result.is_ok());
 
@@ -81,13 +79,11 @@ mod configuration_repo_tests {
             path: test_path,
             added_by: None,
         };
-        
+
         let result = repo.add(new_library).await;
         assert!(result.is_ok());
 
-        let libraries = repo.get_all()
-            .await
-            .expect("Failed to get libraries");
+        let libraries = repo.get_all().await.expect("Failed to get libraries");
 
         assert!(libraries.is_some());
         let libs = libraries.unwrap();
@@ -107,10 +103,14 @@ mod configuration_repo_tests {
             path: initial_path,
             added_by: None,
         };
-        
+
         repo.add(new_library).await.expect("Failed to add library");
 
-        let libraries = repo.get_all().await.expect("Failed to get libraries").unwrap();
+        let libraries = repo
+            .get_all()
+            .await
+            .expect("Failed to get libraries")
+            .unwrap();
         let library_id = libraries[0].library_id;
 
         let updated_path = "/updated/path";
@@ -120,11 +120,14 @@ mod configuration_repo_tests {
             path: Some(updated_path),
             added_by: None,
         };
-        
+
         let result = repo.update(library_id, update).await;
         assert!(result.is_ok());
 
-        let library = repo.get_by_id(library_id).await.expect("Failed to get library");
+        let library = repo
+            .get_by_id(library_id)
+            .await
+            .expect("Failed to get library");
         assert!(library.is_some());
         assert_eq!(library.unwrap().path, updated_path);
     }
@@ -136,9 +139,9 @@ mod user_repo_tests {
     use diesel_async::RunQueryDsl;
 
     use crate::data::database;
+    use crate::data::models::users::NewUser;
     use crate::data::repos::implementors::user_repo::UserRepo;
     use crate::data::repos::traits::repository::Repository;
-    use crate::data::models::users::NewUser;
 
     /// Helper function to clear the users table before each test
     async fn setup() -> Result<(), Error> {
@@ -221,7 +224,8 @@ mod user_repo_tests {
         let users = repo.get_all().await.expect("Failed to get users").unwrap();
         let user_id = users[0].user_id;
 
-        let user = repo.get_by_id(user_id)
+        let user = repo
+            .get_by_id(user_id)
             .await
             .expect("Failed to get user by id");
 
@@ -237,7 +241,8 @@ mod user_repo_tests {
         setup().await.expect("Failed to set up test");
 
         let repo = UserRepo::new().await;
-        let user = repo.get_by_id(999)
+        let user = repo
+            .get_by_id(999)
             .await
             .expect("Failed to execute get_user_by_id");
 
@@ -258,7 +263,8 @@ mod user_repo_tests {
             .expect("Failed to create test user");
 
         let repo = UserRepo::new().await;
-        let user = repo.search_by_username(username)
+        let user = repo
+            .search_by_username(username)
             .await
             .expect("Failed to get user by username");
 
@@ -274,7 +280,8 @@ mod user_repo_tests {
         setup().await.expect("Failed to set up test");
 
         let repo = UserRepo::new().await;
-        let user = repo.search_by_username("nonexistentuser")
+        let user = repo
+            .search_by_username("nonexistentuser")
             .await
             .expect("Failed to execute get_user_by_username");
 
@@ -318,3 +325,4 @@ mod user_repo_tests {
 }
 
 // TODO: Test controllers
+// TODO: Test services

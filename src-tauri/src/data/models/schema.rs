@@ -23,14 +23,8 @@ diesel::table! {
         isbn -> Nullable<Text>,
         file_type -> Nullable<Text>,
         file_path -> Nullable<Text>,
+        cover_image_path -> Nullable<Text>,
         added_at -> Nullable<Text>,
-    }
-}
-
-diesel::table! {
-    configuration (configuration_id) {
-        configuration_id -> Integer,
-        book_path -> Nullable<Text>,
     }
 }
 
@@ -78,7 +72,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     authors,
     book_authors,
     books,
-    configuration,
     libraries,
     publishers,
     user_library,
