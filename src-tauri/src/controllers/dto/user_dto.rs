@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct UserDTO {
     pub username: String,
     pub email: String,
+    pub role: Option<String>,
     pub created_at: Option<String>,
 }
 
@@ -12,5 +13,6 @@ pub struct NewUserDTO {
     pub username: String,
     pub email: String,
     pub password: String,
+    pub role: Option<String>,
     pub created_at: Option<String>,
 }

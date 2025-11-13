@@ -34,12 +34,14 @@ async fn create_test_user(
     username_val: &str,
     email_val: &str,
     password_val: &str,
+    role_val: Option<&str>,
 ) -> Result<(), Error> {
     let repo = UserRepo::new().await;
     let new_user = NewUser {
         username: username_val,
         email: email_val,
         password_hash: password_val,
+        role: role_val,
         created_at: None,
     };
 
@@ -54,8 +56,9 @@ async fn test_create_user() {
     let username = "testuser";
     let email = "test@example.com";
     let password = "hashedpassword123";
+    let role = "admin";
 
-    let result = create_test_user(username, email, password).await;
+    let result = create_test_user(username, email, password, Some(role)).await;
     assert!(result.is_ok());
 
     let repo = UserRepo::new().await;
@@ -67,6 +70,7 @@ async fn test_create_user() {
     assert_eq!(users_vec[0].username, username);
     assert_eq!(users_vec[0].email, email);
     assert_eq!(users_vec[0].password_hash, password);
+    assert_eq!(users_vec[0].role, Some(role.to_string()));
 }
 
 #[tokio::test]
@@ -90,7 +94,7 @@ async fn test_get_user_by_id() {
     let email = "test@example.com";
     let password = "hashedpassword123";
 
-    create_test_user(username, email, password)
+    create_test_user(username, email, password, None)
         .await
         .expect("Failed to create test user");
 
@@ -107,6 +111,7 @@ async fn test_get_user_by_id() {
     let found_user = user.unwrap();
     assert_eq!(found_user.username, username);
     assert_eq!(found_user.email, email);
+    assert_eq!(found_user.role, Some("admin".to_string()));
 }
 
 #[tokio::test]
@@ -131,8 +136,9 @@ async fn test_get_user_by_username() {
     let username = "uniqueuser";
     let email = "unique@example.com";
     let password = "uniquepass123";
+    let role = "user";
 
-    create_test_user(username, email, password)
+    create_test_user(username, email, password, Some(role))
         .await
         .expect("Failed to create test user");
 
@@ -174,9 +180,10 @@ async fn test_get_all_users_multiple() {
         "user3@example.com",
     ];
     let passwords = ["pass1", "pass2", "pass3"];
+    let roles = ["user", "admin", "user"];
 
     for i in 0..3 {
-        create_test_user(usernames[i], emails[i], passwords[i])
+        create_test_user(usernames[i], emails[i], passwords[i], Some(roles[i]))
             .await
             .expect("Failed to create test user");
     }

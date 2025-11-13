@@ -9,6 +9,8 @@ use axum::{
 use crate::{data::repos::traits::repository::Repository, services::authentication_service::AuthenticationService};
 use crate::{controllers::dto::user_dto::*, data::repos::implementors::user_repo::UserRepo};
 // TODO: Test this endpoint
+/// Endpoint to register a new user (/register)
+/// Password is hashed using Argon2 before storing in the database
 pub async fn create_user(Json(user): Json<NewUserDTO>) -> impl IntoResponse {
     let auth = AuthenticationService::new();
     let repo = UserRepo::new().await;
@@ -17,6 +19,7 @@ pub async fn create_user(Json(user): Json<NewUserDTO>) -> impl IntoResponse {
     let new_user = NewUser {
         username: &user.username,
         email: &user.email,
+        role: user.role.as_deref(),
         password_hash: &auth.hash_and_verify(&user.password).unwrap(),
         created_at: user.created_at.as_deref(),
     };
@@ -37,7 +40,7 @@ pub async fn create_user(Json(user): Json<NewUserDTO>) -> impl IntoResponse {
         .body(Body::from("User created"))
         .unwrap();
 }
-// List all users - for testing purposes
+/// List all users - for testing purposes
 pub async fn list_users() -> Json<Vec<UserDTO>> {
     let repo = UserRepo::new().await;
     let users = match repo.get_all().await {
@@ -46,6 +49,7 @@ pub async fn list_users() -> Json<Vec<UserDTO>> {
             .map(|u| UserDTO {
                 username: u.username,
                 email: u.email,
+                role: u.role,
                 created_at: u.created_at,
             })
             .collect(),
@@ -58,7 +62,7 @@ pub async fn list_users() -> Json<Vec<UserDTO>> {
 
     return Json(users);
 }
-// For testing purposes, get user by id via query param
+/// For testing purposes, get user by id via query param
 pub async fn get_user(
     Query(params): Query<std::collections::HashMap<String, String>>,
 ) -> impl IntoResponse {
@@ -80,6 +84,7 @@ pub async fn get_user(
             let user_response = UserDTO {
                 username: user.username,
                 email: user.email,
+                role: user.role,
                 created_at: user.created_at,
             };
             Response::builder()

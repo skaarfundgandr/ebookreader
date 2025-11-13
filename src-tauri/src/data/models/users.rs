@@ -10,6 +10,7 @@ pub struct Users {
     pub user_id: i32,
     pub username: String,
     pub email: String,
+    pub role: Option<String>,
     pub password_hash: String,
     pub created_at: Option<String>,
 }
@@ -19,6 +20,7 @@ pub struct Users {
 pub struct NewUser<'a> {
     pub username: &'a str,
     pub email: &'a str,
+    pub role: Option<&'a str>,
     pub password_hash: &'a str,
     pub created_at: Option<&'a str>,
 }
@@ -28,5 +30,6 @@ pub struct NewUser<'a> {
 pub struct UpdateUser<'a> {
     pub username: Option<&'a str>,
     pub email: Option<&'a str>,
+    pub role: Option<&'a str>,
     pub password_hash: Option<&'a str>,
 }

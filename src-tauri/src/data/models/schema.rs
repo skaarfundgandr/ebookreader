@@ -58,6 +58,7 @@ diesel::table! {
         user_id -> Integer,
         username -> Text,
         email -> Text,
+        role -> Nullable<Text>,
         password_hash -> Text,
         created_at -> Nullable<Text>,
     }

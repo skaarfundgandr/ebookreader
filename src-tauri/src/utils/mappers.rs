@@ -8,6 +8,7 @@ impl From<NewUserDTO> for UserDTO {
             username: user.username.to_string(),
             email: user.email.to_string(),
             created_at: user.created_at.map(|s| s.to_string()),
+            role: user.role.map(|s| s.to_string()),
         }
     }
 }
@@ -18,6 +19,7 @@ impl From<Users> for UserDTO {
             username: user.username,
             email: user.email,
             created_at: user.created_at,
+            role: user.role,
         }
     }
 }
