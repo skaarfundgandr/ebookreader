@@ -40,14 +40,4 @@ impl AuthenticationService {
         self.verify_password(password, &hash)?;
         Ok(hash)
     }
-
-    pub fn generate_jwt(&self, _user_id: i32) -> String {
-        // TODO: Implement JWT token generation
-        unimplemented!()
-    }
-
-    pub fn verify_jwt(&self, _token: &str) -> bool {
-        // TODO: Implement JWT token verification
-        unimplemented!()
-    }
 }
