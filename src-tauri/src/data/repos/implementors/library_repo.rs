@@ -1,8 +1,7 @@
+use async_trait::async_trait;
 use diesel::prelude::*;
 use diesel::result::{DatabaseErrorKind, Error};
 use diesel_async::{scoped_futures::ScopedFutureExt, AsyncConnection, RunQueryDsl};
-
-use async_trait::async_trait;
 
 use crate::data::{
     database::{connect_from_pool, lock_db},
@@ -46,24 +45,24 @@ impl Repository for LibraryRepo {
     type Form<'a> = UpdateLibrary<'a>;
     type Id = i32;
 
-    async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, diesel::result::Error> {
+    async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, Error> {
         use crate::data::models::schema::libraries::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
-            diesel::result::Error::DatabaseError(
-                diesel::result::DatabaseErrorKind::UnableToSendCommand,
+            Error::DatabaseError(
+                DatabaseErrorKind::UnableToSendCommand,
                 Box::new(e.to_string()),
             )
         })?;
 
         match libraries.load::<Self::Item>(&mut conn).await {
             Ok(value) => Ok(Some(value)),
-            Err(diesel::result::Error::NotFound) => Ok(None),
+            Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),
         }
     }
 
-    async fn get_by_id(&self, id: Self::Id) -> Result<Option<Self::Item>, diesel::result::Error> {
+    async fn get_by_id(&self, id: Self::Id) -> Result<Option<Self::Item>, Error> {
         use crate::data::models::schema::{libraries as lib, libraries::dsl::*};
 
         let mut conn = connect_from_pool().await.map_err(|e| {

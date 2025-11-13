@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use diesel::prelude::*;
-use diesel::result::{self, DatabaseErrorKind, Error};
+use diesel::result::{DatabaseErrorKind, Error};
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, RunQueryDsl};
 use tokio::sync::MutexGuard;
@@ -21,7 +21,7 @@ impl BookAuthorRepo {
     pub async fn get_authors_by_book(
         &self,
         bid: i32,
-    ) -> Result<Option<Vec<Authors>>, result::Error> {
+    ) -> Result<Option<Vec<Authors>>, Error> {
         use crate::data::models::schema::{authors, book_authors};
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -44,7 +44,7 @@ impl BookAuthorRepo {
         };
     }
 
-    pub async fn get_books_by_author(&self, aid: i32) -> Result<Option<Vec<Books>>, result::Error> {
+    pub async fn get_books_by_author(&self, aid: i32) -> Result<Option<Vec<Books>>, Error> {
         use crate::data::models::schema::{book_authors, books};
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -85,11 +85,11 @@ impl Repository for BookAuthorRepo {
     type Form<'a> = BookAuthors; // No update form needed for junction tables
     type Id = (i32, i32); // Tuple: (book_id, author_id)
 
-    async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, result::Error> {
+    async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, Error> {
         use crate::data::models::schema::book_authors::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
-            result::Error::DatabaseError(
+            Error::DatabaseError(
                 DatabaseErrorKind::UnableToSendCommand,
                 Box::new(e.to_string()),
             )
@@ -97,12 +97,12 @@ impl Repository for BookAuthorRepo {
 
         match book_authors.load::<Self::Item>(&mut conn).await {
             Ok(value) => Ok(Some(value)),
-            Err(result::Error::NotFound) => Ok(None),
+            Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),
         }
     }
 
-    async fn get_by_id(&self, id: Self::Id) -> Result<Option<Self::Item>, result::Error> {
+    async fn get_by_id(&self, id: Self::Id) -> Result<Option<Self::Item>, Error> {
         use crate::data::models::schema::book_authors::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -123,7 +123,7 @@ impl Repository for BookAuthorRepo {
         }
     }
 
-    async fn add<'a>(&self, new_item: Self::NewItem<'a>) -> Result<(), result::Error> {
+    async fn add<'a>(&self, new_item: Self::NewItem<'a>) -> Result<(), Error> {
         use crate::data::models::schema::book_authors::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -159,12 +159,12 @@ impl Repository for BookAuthorRepo {
         &self,
         _id: Self::Id,
         _updated_item: Self::Form<'a>,
-    ) -> Result<(), result::Error> {
+    ) -> Result<(), Error> {
         // Junction tables typically don't support updates - delete and re-add instead
         Err(Error::NotFound)
     }
 
-    async fn delete(&self, id: Self::Id) -> Result<(), result::Error> {
+    async fn delete(&self, id: Self::Id) -> Result<(), Error> {
         use crate::data::models::schema::book_authors::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {

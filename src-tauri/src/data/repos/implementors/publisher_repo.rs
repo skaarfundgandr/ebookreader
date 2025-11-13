@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use diesel::prelude::*;
-use diesel::result::{self, DatabaseErrorKind, Error};
+use diesel::result::{DatabaseErrorKind, Error};
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, RunQueryDsl};
 use tokio::sync::MutexGuard;
@@ -21,7 +21,7 @@ impl PublisherRepo {
     pub async fn search_by_name(
         &self,
         name_query: &str,
-    ) -> Result<Option<Vec<Publishers>>, result::Error> {
+    ) -> Result<Option<Vec<Publishers>>, Error> {
         use crate::data::models::schema::publishers::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -50,11 +50,11 @@ impl Repository for PublisherRepo {
     type Form<'a> = UpdatePublisher<'a>;
     type Id = i32;
 
-    async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, result::Error> {
+    async fn get_all(&self) -> Result<Option<Vec<Self::Item>>, Error> {
         use crate::data::models::schema::publishers::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
-            result::Error::DatabaseError(
+            Error::DatabaseError(
                 DatabaseErrorKind::UnableToSendCommand,
                 Box::new(e.to_string()),
             )
@@ -62,12 +62,12 @@ impl Repository for PublisherRepo {
 
         match publishers.load::<Self::Item>(&mut conn).await {
             Ok(value) => Ok(Some(value)),
-            Err(result::Error::NotFound) => Ok(None),
+            Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),
         }
     }
 
-    async fn get_by_id(&self, id: Self::Id) -> Result<Option<Self::Item>, result::Error> {
+    async fn get_by_id(&self, id: Self::Id) -> Result<Option<Self::Item>, Error> {
         use crate::data::models::schema::{publishers as publisher, publishers::dsl::*};
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -88,7 +88,7 @@ impl Repository for PublisherRepo {
         }
     }
 
-    async fn add<'a>(&self, new_item: Self::NewItem<'a>) -> Result<(), result::Error> {
+    async fn add<'a>(&self, new_item: Self::NewItem<'a>) -> Result<(), Error> {
         use crate::data::models::schema::publishers::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -124,7 +124,7 @@ impl Repository for PublisherRepo {
         &self,
         id: Self::Id,
         updated_item: Self::Form<'a>,
-    ) -> Result<(), result::Error> {
+    ) -> Result<(), Error> {
         use crate::data::models::schema::publishers::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -156,7 +156,7 @@ impl Repository for PublisherRepo {
         }
     }
 
-    async fn delete(&self, id: Self::Id) -> Result<(), result::Error> {
+    async fn delete(&self, id: Self::Id) -> Result<(), Error> {
         use crate::data::models::schema::publishers::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
