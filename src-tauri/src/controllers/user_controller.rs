@@ -6,8 +6,11 @@ use axum::{
     Json,
 };
 
-use crate::{data::repos::traits::repository::Repository, services::authentication_service::AuthenticationService};
 use crate::{controllers::dto::user_dto::*, data::repos::implementors::user_repo::UserRepo};
+use crate::{
+    data::repos::traits::repository::Repository,
+    services::authentication_service::AuthenticationService,
+};
 // TODO: Test this endpoint
 /// Endpoint to register a new user (/register)
 /// Password is hashed using Argon2 before storing in the database
@@ -23,7 +26,7 @@ pub async fn create_user(Json(user): Json<NewUserDTO>) -> impl IntoResponse {
         password_hash: &auth.hash_and_verify(&user.password).unwrap(),
         created_at: user.created_at.as_deref(),
     };
-    
+
     match repo.add(new_user).await {
         Ok(_) => (),
         Err(e) => {
@@ -67,7 +70,10 @@ pub async fn get_user(
     Query(params): Query<std::collections::HashMap<String, String>>,
 ) -> impl IntoResponse {
     // Extract user_id from query params
-    let username = match params.get("username").and_then(|id| id.parse::<String>().ok()) {
+    let username = match params
+        .get("username")
+        .and_then(|id| id.parse::<String>().ok())
+    {
         Some(id) => id,
         None => {
             return Response::builder()
