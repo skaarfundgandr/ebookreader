@@ -39,6 +39,7 @@ impl UserLibraryRepo {
             .load::<UserLibrary>(&mut conn)
             .await
         {
+            Ok(value) if value.is_empty() => Ok(None),
             Ok(value) => Ok(Some(value)),
             Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),
@@ -72,6 +73,7 @@ impl UserLibraryRepo {
             .load::<Books>(&mut conn)
             .await
         {
+            Ok(value) if value.is_empty() => Ok(None),
             Ok(value) => Ok(Some(value)),
             Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),
@@ -97,6 +99,7 @@ impl Repository for UserLibraryRepo {
         })?;
 
         match user_library.load::<Self::Item>(&mut conn).await {
+            Ok(value) if value.is_empty() => Ok(None),
             Ok(value) => Ok(Some(value)),
             Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),

@@ -86,17 +86,20 @@ pub async fn get_user(
 
     let repo = UserRepo::new().await;
     return match repo.search_by_username(&username).await {
-        Ok(Some(user)) => {
-            let user_response = UserDTO {
-                username: user.username,
-                email: user.email,
-                role: user.role,
-                created_at: user.created_at,
-            };
+        Ok(Some(users)) => {
+            let user_responses: Vec<UserDTO> = users
+                .into_iter()
+                .map(|user| UserDTO {
+                    username: user.username,
+                    email: user.email,
+                    role: user.role,
+                    created_at: user.created_at,
+                })
+                .collect();
             Response::builder()
                 .status(StatusCode::OK)
                 .header("Content-Type", "application/json")
-                .body(Body::from(serde_json::to_string(&user_response).unwrap()))
+                .body(Body::from(serde_json::to_string(&user_responses).unwrap()))
                 .unwrap()
         }
         Ok(None) => Response::builder()

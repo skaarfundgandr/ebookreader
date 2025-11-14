@@ -12,7 +12,7 @@ use crate::data::{
 };
 
 pub struct UserRepo;
-
+// TODO: Update user table and add refresh token related methods
 impl UserRepo {
     pub async fn new() -> Self {
         UserRepo
@@ -21,8 +21,7 @@ impl UserRepo {
     pub async fn search_by_username(
         &self,
         username_query: &str,
-    ) -> Result<Option<Users>, Error> {
-        // TODO: Change to return a vec of users
+    ) -> Result<Option<Vec<Users>>, Error> {
         use crate::data::models::schema::users::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -33,10 +32,11 @@ impl UserRepo {
         })?;
 
         return match users
-            .filter(username.eq(username_query))
-            .first::<Users>(&mut conn)
+            .filter(username.like(format!("%{}%", username_query)))
+            .load::<Users>(&mut conn)
             .await
         {
+            Ok(value) if value.is_empty() => Ok(None),
             Ok(value) => Ok(Some(value)),
             Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),
@@ -83,6 +83,7 @@ impl Repository for UserRepo {
         })?;
 
         match users.load::<Self::Item>(&mut conn).await {
+            Ok(value) if value.is_empty() => Ok(None),
             Ok(value) => Ok(Some(value)),
             Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),

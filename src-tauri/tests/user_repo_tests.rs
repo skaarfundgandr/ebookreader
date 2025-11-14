@@ -143,13 +143,15 @@ async fn test_get_user_by_username() {
         .expect("Failed to create test user");
 
     let repo = UserRepo::new().await;
-    let user = repo
+    let users = repo
         .search_by_username(username)
         .await
         .expect("Failed to get user by username");
 
-    assert!(user.is_some());
-    let found_user = user.unwrap();
+    assert!(users.is_some());
+    let found_users = users.unwrap();
+    assert_eq!(found_users.len(), 1);
+    let found_user = &found_users[0];
     assert_eq!(found_user.username, username);
     assert_eq!(found_user.email, email);
 }
@@ -160,12 +162,14 @@ async fn test_get_user_by_username_nonexistent() {
     setup().await.expect("Failed to set up test");
 
     let repo = UserRepo::new().await;
-    let user = repo
+    let users = repo
         .search_by_username("nonexistentuser")
         .await
         .expect("Failed to execute get_user_by_username");
 
-    assert!(user.is_none());
+    print!("Users: {:?}", users);
+
+    assert!(users.is_none());
 }
 
 #[tokio::test]

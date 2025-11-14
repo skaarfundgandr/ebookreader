@@ -32,6 +32,7 @@ impl AuthorRepo {
             .load::<Authors>(&mut conn)
             .await
         {
+            Ok(value) if value.is_empty() => Ok(None),
             Ok(value) => Ok(Some(value)),
             Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),

@@ -31,6 +31,7 @@ impl LibraryRepo {
             .load::<Library>(&mut conn)
             .await
         {
+            Ok(value) if value.is_empty() => Ok(None),
             Ok(value) => Ok(Some(value)),
             Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),
@@ -56,6 +57,7 @@ impl Repository for LibraryRepo {
         })?;
 
         match libraries.load::<Self::Item>(&mut conn).await {
+            Ok(value) if value.is_empty() => Ok(None),
             Ok(value) => Ok(Some(value)),
             Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),

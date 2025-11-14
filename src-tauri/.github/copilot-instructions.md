@@ -47,6 +47,10 @@ src/
 │   └── migrations/         # Diesel SQL (7 tables: users, books, authors, etc.)
 ├── handlers/               # File parsers (epub_handler partially done, mobi/pdf stubs)
 ├── services/               # Business logic (all stubs except AuthenticationService)
+│   ├── authentication_service.rs  # ✅ Argon2 password hashing
+│   ├── token_service.rs           # 🚧 JWT scaffold with Lazy singleton (unimplemented)
+│   └── [other services]           # ❌ Stubs (book, library, metadata, cover, OPDS)
+├── utils/                  # Helpers (deserializers, serializers, mappers - mostly empty)
 └── opds/                   # OPDS feed generation (all stubs)
 ```
 
@@ -188,6 +192,13 @@ impl Repository for AuthorRepo {
 - Implementors: `CamelCase` struct (`AuthorRepo`, `DieselUserRepo` if multiple backends)
 - NEVER store `conn` in struct fields - acquire fresh from pool per method
 
+**Custom domain methods** - All repos extend the base trait with specific queries:
+- `UserRepo::search_by_username()`, `search_by_email()`
+- `BookRepo::search_by_title()`, `search_by_publisher()`
+- `AuthorRepo::search_by_name()`
+- `UserLibraryRepo::get_books_by_user()`, `BookAuthorRepo::get_books_by_author()`
+- `LibraryRepo::search_by_name()`
+
 **Associated type lifetimes** (GATs):
 - `NewItem<'a>` and `Form<'a>` use Generic Associated Types for borrowed data
 - Example: `NewUser<'a>` has `username: &'a str` (no allocation on insert)
@@ -306,6 +317,28 @@ use stellaron_lib::data::repos::traits::repository::Repository;
 - **tokio** - Async runtime (`features = ["full"]`)
 - **argon2** - Password hashing (`features = ["rand", "std"]`)
 - **serial_test** - Force sequential test execution (SQLite requirement)
+- **once_cell** - Lazy statics for singletons (e.g., DB_POOL, TOKENIZER)
+
+## Patterns & Conventions
+
+### Singleton Pattern (Lazy Statics)
+```rust
+use once_cell::sync::Lazy;
+
+static TOKENIZER: Lazy<Tokenizer> = Lazy::new(|| {
+    Tokenizer {
+        secret_key: "your_secret_key".to_string(),
+        expiration_duration: 3600,
+    }
+});
+
+impl Tokenizer {
+    pub async fn get_instance() -> &'static Tokenizer {
+        &TOKENIZER  // Thread-safe singleton
+    }
+}
+```
+**Used for**: DB_POOL, DB_LOCK, TOKENIZER, PRAGMAS_SET flag
 
 ## Integration Points
 
@@ -356,6 +389,7 @@ users ←─┐
 - EPUB handler (`scan_epubs()` exists, metadata parsing incomplete)
 - Book controller (exists but not exposed in `api.rs`)
 - AuthenticationService (hashing done, JWT TODO)
+- TokenService (singleton scaffold with `Lazy`, methods unimplemented - use axum-extras + jsonwebtoken)
 
 **❌ Not Started:**
 - All Tauri IPC commands (only `sample.rs` exists as template)
@@ -363,6 +397,7 @@ users ←─┐
 - MOBI/PDF handlers (empty files)
 - OPDS feed generation (acquisition, navigation, search stubs)
 - Authentication middleware (no auth on endpoints yet)
+- Utils module (deserializers, serializers, mappers - all empty)
 
 ## Critical Gotchas
 
@@ -375,6 +410,7 @@ users ←─┐
 7. **Error pattern**: `Result<Option<T>, Error>` means Ok(None) = not found, Err = actual failure
 8. **Associated type bounds**: Trait `Id` types need `Send + Sync` for async methods
 9. **Fish shell**: Use `set -x VAR value` for env vars, not `export`
+10. **Junction table updates**: `UserLibraryRepo` and `BookAuthorRepo` don't support update() - delete + re-add instead
 
 ## Quick Reference Commands
 

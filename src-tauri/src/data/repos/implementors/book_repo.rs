@@ -33,6 +33,7 @@ impl BookRepo {
             .load::<Books>(&mut conn)
             .await
         {
+            Ok(value) if value.is_empty() => Ok(None),
             Ok(value) => Ok(Some(value)),
             Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),
@@ -54,6 +55,7 @@ impl BookRepo {
             .load::<Books>(&mut conn)
             .await
         {
+            Ok(value) if value.is_empty() => Ok(None),
             Ok(value) => Ok(Some(value)),
             Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),
@@ -79,6 +81,7 @@ impl Repository for BookRepo {
         })?;
 
         match books.load::<Self::Item>(&mut conn).await {
+            Ok(value) if value.is_empty() => Ok(None),
             Ok(value) => Ok(Some(value)),
             Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),
