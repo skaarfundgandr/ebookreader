@@ -1,12 +1,14 @@
 use axum::{
     body::Body,
-    extract::Query,
     http::StatusCode,
     response::{IntoResponse, Response},
     Json,
 };
 
-use crate::{controllers::dto::user_dto::*, data::repos::implementors::user_repo::UserRepo};
+use crate::{
+    controllers::{auth_middleware::AuthUser, dto::user_dto::*},
+    data::repos::implementors::user_repo::UserRepo,
+};
 use crate::{
     data::repos::traits::repository::Repository,
     services::authentication_service::AuthenticationService,
@@ -19,12 +21,22 @@ pub async fn create_user(Json(user): Json<NewUserDTO>) -> impl IntoResponse {
     let repo = UserRepo::new().await;
 
     use crate::data::models::users::NewUser;
+    let hashed_password = match auth.hash_password(&user.password) {
+        Ok(h) => h,
+        Err(e) => {
+            eprintln!("Error hashing password: {}", e);
+            return Response::builder()
+                .status(StatusCode::INTERNAL_SERVER_ERROR)
+                .body(Body::from("Failed to process password"))
+                .unwrap();
+        }
+    };
+
     let new_user = NewUser {
         username: &user.username,
         email: &user.email,
         role: user.role.as_deref(),
-        password_hash: &auth.hash_and_verify(&user.password).unwrap(),
-        created_at: user.created_at.as_deref(),
+        password_hash: &hashed_password,
     };
 
     match repo.add(new_user).await {
@@ -43,6 +55,7 @@ pub async fn create_user(Json(user): Json<NewUserDTO>) -> impl IntoResponse {
         .body(Body::from("User created"))
         .unwrap();
 }
+
 /// List all users - for testing purposes
 pub async fn list_users() -> Json<Vec<UserDTO>> {
     let repo = UserRepo::new().await;
@@ -66,40 +79,20 @@ pub async fn list_users() -> Json<Vec<UserDTO>> {
     return Json(users);
 }
 /// For testing purposes, get user by id via query param
-pub async fn get_user(
-    Query(params): Query<std::collections::HashMap<String, String>>,
-) -> impl IntoResponse {
-    // Extract user_id from query params
-    let username = match params
-        .get("username")
-        .and_then(|id| id.parse::<String>().ok())
-    {
-        Some(id) => id,
-        None => {
-            return Response::builder()
-                .status(StatusCode::BAD_REQUEST)
-                .header("Content-Type", "application/json")
-                .body(Body::from(r#"{"error":"Missing or invalid user id"}"#))
-                .unwrap();
-        }
-    };
-
+pub async fn get_user(user: AuthUser) -> impl IntoResponse {
     let repo = UserRepo::new().await;
-    return match repo.search_by_username(&username).await {
-        Ok(Some(users)) => {
-            let user_responses: Vec<UserDTO> = users
-                .into_iter()
-                .map(|user| UserDTO {
-                    username: user.username,
-                    email: user.email,
-                    role: user.role,
-                    created_at: user.created_at,
-                })
-                .collect();
+    return match repo.get_by_id(user.id).await {
+        Ok(Some(user)) => {
+            let user_response = UserDTO {
+                username: user.username,
+                email: user.email,
+                role: user.role,
+                created_at: user.created_at,
+            };
             Response::builder()
                 .status(StatusCode::OK)
                 .header("Content-Type", "application/json")
-                .body(Body::from(serde_json::to_string(&user_responses).unwrap()))
+                .body(Body::from(serde_json::to_string(&user_response).unwrap()))
                 .unwrap()
         }
         Ok(None) => Response::builder()

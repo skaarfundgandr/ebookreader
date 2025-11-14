@@ -1,4 +1,5 @@
 pub mod auth_controller;
+pub mod auth_middleware;
 pub mod book_controller;
 pub mod dto;
 pub mod opds_controller;

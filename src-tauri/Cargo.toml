@@ -34,7 +34,7 @@ axum = "0.8.4"
 walkdir = "2.5.0"
 async-trait = "0.1.89"
 argon2 = { version = "0.5.3", features = ["rand", "std"] }
-axum-extra = { version = "0.12.1", features = ["cookie", "file-stream", "attachment"] }
+axum-extra = { version = "0.12.1", features = ["cookie", "file-stream", "attachment", "typed-header"] }
 jsonwebtoken = { version = "10.2.0", features = ["rust_crypto"] }
 
 # 👇 Force bundled SQLite

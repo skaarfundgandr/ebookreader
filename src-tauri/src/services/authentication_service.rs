@@ -1,10 +1,9 @@
-// TODO: Implement hashing and salting for passwords here
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 
 use argon2::password_hash::{self, rand_core::OsRng, SaltString};
 
 pub struct AuthenticationService;
-// TODO: Add JWT token generation and verification methods
+
 impl AuthenticationService {
     pub fn new() -> Self {
         AuthenticationService

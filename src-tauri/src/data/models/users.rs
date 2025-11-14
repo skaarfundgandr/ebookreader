@@ -22,7 +22,6 @@ pub struct NewUser<'a> {
     pub email: &'a str,
     pub role: Option<&'a str>,
     pub password_hash: &'a str,
-    pub created_at: Option<&'a str>,
 }
 
 #[derive(AsChangeset, PartialEq, Debug)]
