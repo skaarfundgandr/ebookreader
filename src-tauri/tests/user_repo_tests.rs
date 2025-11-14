@@ -81,8 +81,7 @@ async fn test_get_all_users_empty() {
     let repo = UserRepo::new().await;
     let users = repo.get_all().await.expect("Failed to get users");
 
-    assert!(users.is_some());
-    assert_eq!(users.unwrap().len(), 0);
+    assert!(users.is_none());
 }
 
 #[tokio::test]

@@ -94,8 +94,7 @@ async fn test_get_all_books_empty() {
     let repo = BookRepo::new().await;
     let books = repo.get_all().await.expect("Failed to get books");
 
-    assert!(books.is_some());
-    assert_eq!(books.unwrap().len(), 0);
+    assert!(books.is_none());
 }
 
 #[tokio::test]

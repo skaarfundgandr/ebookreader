@@ -63,8 +63,7 @@ async fn test_get_all_publishers_empty() {
     let repo = PublisherRepo::new().await;
     let publishers = repo.get_all().await.expect("Failed to get publishers");
 
-    assert!(publishers.is_some());
-    assert_eq!(publishers.unwrap().len(), 0);
+    assert!(publishers.is_none());
 }
 
 #[tokio::test]

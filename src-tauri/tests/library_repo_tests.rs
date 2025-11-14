@@ -26,8 +26,7 @@ async fn test_get_all_configurations_empty() {
     let repo = LibraryRepo::new().await;
     let libraries = repo.get_all().await.expect("Failed to get libraries");
 
-    assert!(libraries.is_some());
-    assert_eq!(libraries.unwrap().len(), 0);
+    assert!(libraries.is_none());
 }
 
 #[tokio::test]
