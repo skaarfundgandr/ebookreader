@@ -1,6 +1,8 @@
+pub mod annotation_repo;
 pub mod author_repo;
 pub mod book_author_repo;
 pub mod book_repo;
+pub mod bookmark_repo;
 pub mod library_repo;
 pub mod publisher_repo;
 pub mod user_library_repo;

@@ -1,5 +1,7 @@
-use crate::controllers::{auth_controller, book_controller, user_controller};
-use axum::routing::{get, post};
+use crate::controllers::{
+    annotation_controller, auth_controller, book_controller, bookmark_controller, user_controller,
+};
+use axum::routing::{delete, get, post, put};
 use axum::Router;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
@@ -14,6 +16,25 @@ pub fn start() {
         .route("/refresh", post(auth_controller::refresh))
         .route("/logout", post(auth_controller::logout))
         .route("/book/:id/content", get(book_controller::get_book_content))
+        .route("/bookmarks", post(bookmark_controller::create_bookmark))
+        .route("/bookmarks", get(bookmark_controller::get_bookmarks))
+        .route(
+            "/bookmarks/:id",
+            delete(bookmark_controller::delete_bookmark),
+        )
+        .route(
+            "/annotations",
+            post(annotation_controller::create_annotation),
+        )
+        .route("/annotations", get(annotation_controller::get_annotations))
+        .route(
+            "/annotations/:id",
+            put(annotation_controller::update_annotation),
+        )
+        .route(
+            "/annotations/:id",
+            delete(annotation_controller::delete_annotation),
+        )
         .with_state(());
 
     tokio::spawn(async move {
