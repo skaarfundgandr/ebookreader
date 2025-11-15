@@ -1,11 +1,13 @@
 use chrono::{Duration, Utc};
+use dotenvy::dotenv;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
+use std::env;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-    pub sub: i32, // Subject (user_id)
+    pub sub: i32,   // Subject (user_id)
     pub exp: usize, // Expiration time
 }
 
@@ -55,9 +57,17 @@ impl Tokenizer {
 }
 
 static TOKENIZER: Lazy<Tokenizer> = Lazy::new(|| {
-    // TODO: Move secret_key to an environment variable
+    dotenv().ok(); // Load .env file
+
+    let secret_key = env::var("JWT_SECRET")
+        .unwrap_or_else(|_| "a_very_secret_key_that_should_be_in_env".to_string());
+    let expiration_duration = env::var("TOKEN_EXPIRATION_SECONDS")
+        .unwrap_or_else(|_| "3600".to_string())
+        .parse::<i64>()
+        .unwrap_or(3600);
+
     Tokenizer {
-        secret_key: "a_very_secret_key_that_should_be_in_env".to_string(),
-        expiration_duration: 3600, // 1 hour
+        secret_key,
+        expiration_duration,
     }
 });

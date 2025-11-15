@@ -143,11 +143,7 @@ impl Repository for UserRepo {
         }
     }
 
-    async fn update<'a>(
-        &self,
-        id: Self::Id,
-        updated_item: Self::Form<'a>,
-    ) -> Result<(), Error> {
+    async fn update<'a>(&self, id: Self::Id, updated_item: Self::Form<'a>) -> Result<(), Error> {
         use crate::data::models::schema::users::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {

@@ -23,7 +23,9 @@ pub async fn login(Json(payload): Json<LoginDTO>) -> impl IntoResponse {
                     Ok(true) => {
                         let tokenizer = token_service::Tokenizer::get_instance().await;
                         match tokenizer.generate_token(user.user_id) {
-                            Ok(token) => (StatusCode::OK, Json(TokenResponse { token })).into_response(),
+                            Ok(token) => {
+                                (StatusCode::OK, Json(TokenResponse { token })).into_response()
+                            }
                             Err(_) => (
                                 StatusCode::INTERNAL_SERVER_ERROR,
                                 "Failed to generate token",
@@ -32,7 +34,11 @@ pub async fn login(Json(payload): Json<LoginDTO>) -> impl IntoResponse {
                         }
                     }
                     Ok(false) => (StatusCode::UNAUTHORIZED, "Invalid credentials").into_response(),
-                    Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Password verification failed").into_response(),
+                    Err(_) => (
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        "Password verification failed",
+                    )
+                        .into_response(),
                 }
             } else {
                 (StatusCode::UNAUTHORIZED, "Invalid credentials").into_response()

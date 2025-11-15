@@ -489,11 +489,17 @@ impl EntityRepo {
 
 ## Planned features (backend)
 - [] Read and process the following ebook formats to be sent as raw html to be rendered to the tauri frontend: MOBI, PDF, EPUB (partial)
-- [] Implement Authentication with JWT tokens (use axum-extras and jsonwebtoken crate)
+- [] Implement Authentication with JWT tokens and refresh tokens (use axum-extras and jsonwebtoken crate)
 - [] Bookmarking and Annotations
 - [] OPDS feed generation and navigation for remote access
 - [] Cover image extraction and caching
-- [] (Optional) Dictionary lookup of highlighted words <-- DO NOT IMPLEMENT YET
+- [] (Optional) Dictionary lookup of highlighted words <-- DO NOT IMPLEMENT YET (TO BE IMPLEMENTED IN THE FRONTEND)
 - [] Multiple library support per user
 - [] Sync reading progress across clients via REST API
 - [] Advanced search and filtering options
+
+## Notes
+- Send only raw html from handlers to frontend; no CSS or JS processing in backend
+
+## Instructions for AI Assistants
+- USE CONTEXT7 WHEN TRYING TO LOOKUP THE DOCUMENTATION OF USED CRATES/LIBRARIES <-- IMPORTANT

@@ -42,7 +42,6 @@ async fn create_test_user(
         email: email_val,
         password_hash: password_val,
         role: role_val,
-        created_at: None,
     };
 
     repo.add(new_user).await

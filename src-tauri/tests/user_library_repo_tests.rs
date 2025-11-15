@@ -43,7 +43,6 @@ async fn create_test_user(username_val: &str) -> i32 {
         email: &format!("{}@test.com", username_val),
         role: Some("user"),
         password_hash: "password",
-        created_at: None,
     };
     repo.add(new_user)
         .await

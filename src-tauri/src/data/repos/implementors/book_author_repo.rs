@@ -18,10 +18,7 @@ impl BookAuthorRepo {
         BookAuthorRepo
     }
 
-    pub async fn get_authors_by_book(
-        &self,
-        bid: i32,
-    ) -> Result<Option<Vec<Authors>>, Error> {
+    pub async fn get_authors_by_book(&self, bid: i32) -> Result<Option<Vec<Authors>>, Error> {
         use crate::data::models::schema::{authors, book_authors};
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -158,11 +155,7 @@ impl Repository for BookAuthorRepo {
         }
     }
 
-    async fn update<'a>(
-        &self,
-        _id: Self::Id,
-        _updated_item: Self::Form<'a>,
-    ) -> Result<(), Error> {
+    async fn update<'a>(&self, _id: Self::Id, _updated_item: Self::Form<'a>) -> Result<(), Error> {
         // Junction tables typically don't support updates - delete and re-add instead
         Err(Error::NotFound)
     }

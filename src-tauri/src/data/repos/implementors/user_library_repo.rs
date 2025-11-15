@@ -21,10 +21,7 @@ impl UserLibraryRepo {
         UserLibraryRepo
     }
 
-    pub async fn get_library_by_user(
-        &self,
-        uid: i32,
-    ) -> Result<Option<Vec<UserLibrary>>, Error> {
+    pub async fn get_library_by_user(&self, uid: i32) -> Result<Option<Vec<UserLibrary>>, Error> {
         use crate::data::models::schema::user_library::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -159,11 +156,7 @@ impl Repository for UserLibraryRepo {
         }
     }
 
-    async fn update<'a>(
-        &self,
-        _id: Self::Id,
-        _updated_item: Self::Form<'a>,
-    ) -> Result<(), Error> {
+    async fn update<'a>(&self, _id: Self::Id, _updated_item: Self::Form<'a>) -> Result<(), Error> {
         // Junction tables typically don't support updates - delete and re-add instead
         // If you need to update added_at, you would need a different approach
         Err(Error::NotFound)

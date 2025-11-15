@@ -1,8 +1,13 @@
+use base64::{engine::general_purpose, Engine as _};
 use rbook::{prelude::*, Ebook, Epub};
+use regex::Regex;
+use scraper::{Html, Selector};
 use std::path::{Path, PathBuf};
 use tokio::{fs, task::JoinError};
 use walkdir::WalkDir;
 
+/// # This module uses the `rbook` crate to handle EPUB files with the 'threadsafe' feature enabled.
+/// Documentation: https://docs.rs/rbook/latest/rbook/
 // A struct to hold metadata parsed from an EPUB file.
 pub struct BookMetadata {
     pub title: String,
@@ -74,7 +79,7 @@ pub async fn parse_epub_meta(
             .map(|i| i.value().to_string());
 
         let cover_data = if let Some(cover_image) = book.manifest().images().next() {
-            let mime_type = cover_image.media_type().to_string();
+            let mime_type = cover_image.resource_kind().as_str().to_string();
             cover_image
                 .read_bytes()
                 .ok()
@@ -127,4 +132,66 @@ fn sanitize_filename(filename: &str) -> String {
         .chars()
         .filter(|c| c.is_alphanumeric() || *c == '.' || *c == '-' || *c == '_')
         .collect()
+}
+
+/// Extracts and returns all HTML content from an EPUB file
+pub async fn get_epub_content(
+    path: &str,
+) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+    let path_str = path.to_string();
+    tokio::task::spawn_blocking(move || {
+        let epub = Epub::open(&path_str).map_err(|e| e.to_string())?;
+        let mut combined_html = String::new();
+
+        let img_re = Regex::new(r#"<img[^>]+src="([^"]+)"[^>]*>"#).unwrap();
+
+        let spine = epub.spine().entries().collect::<Vec<_>>();
+
+        for item_ref in spine {
+            if let Some(resource) = epub.manifest().by_id(item_ref.idref()) {
+                if resource.resource_kind().as_str() == "application/xhtml+xml" {
+                    if let Ok(content) = epub.read_resource_str(resource.resource()) {
+                        let mut modified_content = content.clone();
+
+                        for cap in img_re.captures_iter(&content) {
+                            let src = &cap[1];
+                            if !src.starts_with("data:") {
+                                // Get the directory of the current resource
+                                let current_href = resource.href().as_str();
+                                let resolved_href =
+                                    if let Some(parent) = Path::new(current_href).parent() {
+                                        parent.join(src).to_string_lossy().to_string()
+                                    } else {
+                                        src.to_string()
+                                    };
+
+                                if let Some(image_resource) =
+                                    epub.manifest().by_href(&resolved_href)
+                                {
+                                    if let Ok(image_bytes) = image_resource.read_bytes() {
+                                        let encoded =
+                                            general_purpose::STANDARD.encode(&image_bytes);
+                                        let kind = image_resource.resource_kind();
+                                        let mime_type = kind.as_str();
+                                        let data_url =
+                                            format!("data:{};base64,{}", mime_type, encoded);
+                                        modified_content = modified_content.replace(src, &data_url);
+                                    }
+                                }
+                            }
+                        }
+
+                        let document = Html::parse_document(&modified_content);
+                        let body_selector = Selector::parse("body").unwrap();
+                        if let Some(body_node) = document.select(&body_selector).next() {
+                            combined_html.push_str(&body_node.inner_html());
+                        }
+                    }
+                }
+            }
+        }
+        Ok(combined_html)
+    })
+    .await?
+    .map_err(|e: String| e.into())
 }

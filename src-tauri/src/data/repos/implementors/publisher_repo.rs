@@ -18,10 +18,7 @@ impl PublisherRepo {
         PublisherRepo
     }
 
-    pub async fn search_by_name(
-        &self,
-        name_query: &str,
-    ) -> Result<Option<Vec<Publishers>>, Error> {
+    pub async fn search_by_name(&self, name_query: &str) -> Result<Option<Vec<Publishers>>, Error> {
         use crate::data::models::schema::publishers::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -122,11 +119,7 @@ impl Repository for PublisherRepo {
         }
     }
 
-    async fn update<'a>(
-        &self,
-        id: Self::Id,
-        updated_item: Self::Form<'a>,
-    ) -> Result<(), Error> {
+    async fn update<'a>(&self, id: Self::Id, updated_item: Self::Form<'a>) -> Result<(), Error> {
         use crate::data::models::schema::publishers::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {

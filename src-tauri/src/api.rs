@@ -1,4 +1,4 @@
-use crate::controllers::{auth_controller, user_controller};
+use crate::controllers::{auth_controller, book_controller, user_controller};
 use axum::routing::{get, post};
 use axum::Router;
 use std::net::SocketAddr;
@@ -11,6 +11,7 @@ pub fn start() {
         .route("/list_users", get(user_controller::list_users))
         .route("/user", get(user_controller::get_user))
         .route("/login", post(auth_controller::login))
+        .route("/book/:id/content", get(book_controller::get_book_content))
         // .route("/logout", post(auth_controller::logout)) // TODO: Implement logout function
         .with_state(());
 
