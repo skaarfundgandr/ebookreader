@@ -50,9 +50,15 @@ impl Tokenizer {
         .map(|data| data.claims)
     }
 
-    pub fn refresh_token(&self, _token: &str) -> String {
-        // TODO: Implement JWT token refresh
-        unimplemented!()
+    pub fn refresh_token(&self, user_id: i32) -> Result<String, jsonwebtoken::errors::Error> {
+        // Generate a new access token for the user
+        self.generate_token(user_id)
+    }
+
+    pub fn generate_refresh_token(&self) -> String {
+        // Generate a random refresh token (UUID-based)
+        use uuid::Uuid;
+        Uuid::new_v4().to_string()
     }
 }
 

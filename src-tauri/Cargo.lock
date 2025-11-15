@@ -4516,6 +4516,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-opener",
  "tokio",
+ "uuid",
  "walkdir",
 ]
 

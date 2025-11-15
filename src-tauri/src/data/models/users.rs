@@ -13,6 +13,7 @@ pub struct Users {
     pub role: Option<String>,
     pub password_hash: String,
     pub created_at: Option<String>,
+    pub refresh_token: Option<String>,
 }
 
 #[derive(Insertable, PartialEq, Debug)]
@@ -31,4 +32,5 @@ pub struct UpdateUser<'a> {
     pub email: Option<&'a str>,
     pub role: Option<&'a str>,
     pub password_hash: Option<&'a str>,
+    pub refresh_token: Option<&'a str>,
 }

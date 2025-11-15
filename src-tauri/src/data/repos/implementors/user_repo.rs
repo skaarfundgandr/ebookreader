@@ -12,10 +12,57 @@ use crate::data::{
 };
 
 pub struct UserRepo;
-// TODO: Update user table and add refresh token related methods
+
 impl UserRepo {
     pub async fn new() -> Self {
         UserRepo
+    }
+
+    pub async fn update_refresh_token(&self, id: i32, token: &str) -> Result<(), Error> {
+        use crate::data::models::schema::users::dsl::*;
+
+        let mut conn = connect_from_pool().await.map_err(|e| {
+            Error::DatabaseError(
+                DatabaseErrorKind::UnableToSendCommand,
+                Box::new(e.to_string()),
+            )
+        })?;
+
+        let db_lock = lock_db();
+        let _guard: MutexGuard<()> = db_lock.lock().await;
+
+        conn.transaction(|connection| {
+            async move {
+                diesel::update(users.filter(user_id.eq(id)))
+                    .set(refresh_token.eq(token))
+                    .execute(connection)
+                    .await?;
+                Ok(())
+            }
+            .scope_boxed()
+        })
+        .await
+    }
+
+    pub async fn get_by_refresh_token(&self, token: &str) -> Result<Option<Users>, Error> {
+        use crate::data::models::schema::users::dsl::*;
+
+        let mut conn = connect_from_pool().await.map_err(|e| {
+            Error::DatabaseError(
+                DatabaseErrorKind::UnableToSendCommand,
+                Box::new(e.to_string()),
+            )
+        })?;
+
+        match users
+            .filter(refresh_token.eq(token))
+            .first::<Users>(&mut conn)
+            .await
+        {
+            Ok(value) => Ok(Some(value)),
+            Err(Error::NotFound) => Ok(None),
+            Err(e) => Err(e),
+        }
     }
 
     pub async fn search_by_username(

@@ -61,6 +61,7 @@ diesel::table! {
         role -> Nullable<Text>,
         password_hash -> Text,
         created_at -> Nullable<Text>,
+        refresh_token -> Nullable<Text>,
     }
 }
 

@@ -40,6 +40,7 @@ base64 = "0.22.1"
 lol_html = "2.7.0"
 regex = "1.12.2"
 rbook = { version = "0.6.6", features = ["threadsafe"] }
+uuid = { version = "1.11.0", features = ["v4"] }
 
 # 👇 Force bundled SQLite
 [dependencies.libsqlite3-sys]
