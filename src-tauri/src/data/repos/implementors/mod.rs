@@ -5,5 +5,6 @@ pub mod book_repo;
 pub mod bookmark_repo;
 pub mod library_repo;
 pub mod publisher_repo;
+pub mod reading_progress_repo;
 pub mod user_library_repo;
 pub mod user_repo;

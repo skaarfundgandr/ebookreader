@@ -74,6 +74,19 @@ diesel::table! {
 }
 
 diesel::table! {
+    reading_progress (progress_id) {
+        progress_id -> Nullable<Integer>,
+        user_id -> Integer,
+        book_id -> Integer,
+        current_position -> Text,
+        chapter_title -> Nullable<Text>,
+        page_number -> Nullable<Integer>,
+        progress_percentage -> Nullable<Float>,
+        last_read_at -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
     user_library (user_id, book_id) {
         user_id -> Integer,
         book_id -> Integer,
@@ -101,6 +114,8 @@ diesel::joinable!(bookmarks -> books (book_id));
 diesel::joinable!(bookmarks -> users (user_id));
 diesel::joinable!(books -> publishers (publisher_id));
 diesel::joinable!(libraries -> users (added_by));
+diesel::joinable!(reading_progress -> books (book_id));
+diesel::joinable!(reading_progress -> users (user_id));
 diesel::joinable!(user_library -> books (book_id));
 diesel::joinable!(user_library -> users (user_id));
 
@@ -112,6 +127,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     books,
     libraries,
     publishers,
+    reading_progress,
     user_library,
     users,
 );

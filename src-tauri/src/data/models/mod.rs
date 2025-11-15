@@ -5,6 +5,7 @@ pub mod bookmarks;
 pub mod books;
 pub mod libraries;
 pub mod publishers;
+pub mod reading_progress;
 pub mod schema;
 pub mod user_library;
 pub mod users;

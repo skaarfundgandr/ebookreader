@@ -1,5 +1,6 @@
 use crate::controllers::{
-    annotation_controller, auth_controller, book_controller, bookmark_controller, user_controller,
+    annotation_controller, auth_controller, book_controller, bookmark_controller,
+    reading_progress_controller, user_controller,
 };
 use axum::routing::{delete, get, post, put};
 use axum::Router;
@@ -34,6 +35,15 @@ pub fn start() {
         .route(
             "/annotations/:id",
             delete(annotation_controller::delete_annotation),
+        )
+        .route(
+            "/progress",
+            post(reading_progress_controller::update_progress),
+        )
+        .route("/progress", get(reading_progress_controller::get_progress))
+        .route(
+            "/progress/all",
+            get(reading_progress_controller::get_all_progress),
         )
         .with_state(());
 
