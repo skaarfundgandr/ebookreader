@@ -1,6 +1,6 @@
 use crate::controllers::{
     annotation_controller, auth_controller, book_controller, bookmark_controller,
-    reading_progress_controller, user_controller,
+    reading_progress_controller, search_controller, user_controller,
 };
 use axum::routing::{delete, get, post, put};
 use axum::Router;
@@ -45,6 +45,9 @@ pub fn start() {
             "/progress/all",
             get(reading_progress_controller::get_all_progress),
         )
+        .route("/search/books", get(search_controller::search_books))
+        .route("/search/authors", get(search_controller::search_authors))
+        .route("/books", get(search_controller::list_all_books))
         .with_state(());
 
     tokio::spawn(async move {

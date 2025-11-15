@@ -6,4 +6,5 @@ pub mod bookmark_controller;
 pub mod dto;
 pub mod opds_controller;
 pub mod reading_progress_controller;
+pub mod search_controller;
 pub mod user_controller;
