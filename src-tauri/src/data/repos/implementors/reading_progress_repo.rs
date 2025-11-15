@@ -20,8 +20,8 @@ impl ReadingProgressRepo {
 
     pub async fn get_by_user_and_book(
         &self,
-        user_id: i32,
-        book_id: i32,
+        uid: i32,
+        bid: i32,
     ) -> Result<Option<ReadingProgress>, Error> {
         use crate::data::models::schema::reading_progress::dsl::*;
 
@@ -33,8 +33,8 @@ impl ReadingProgressRepo {
         })?;
 
         match reading_progress
-            .filter(crate::data::models::schema::reading_progress::user_id.eq(user_id))
-            .filter(crate::data::models::schema::reading_progress::book_id.eq(book_id))
+            .filter(user_id.eq(uid))
+            .filter(book_id.eq(bid))
             .first::<ReadingProgress>(&mut conn)
             .await
         {
@@ -43,11 +43,9 @@ impl ReadingProgressRepo {
             Err(e) => Err(e),
         }
     }
-
+    /// Upsert reading progress for a user and book
     pub async fn upsert<'a>(
         &self,
-        user_id: i32,
-        book_id: i32,
         progress: NewReadingProgress<'a>,
     ) -> Result<(), Error> {
         use crate::data::models::schema::reading_progress::dsl::*;
@@ -70,8 +68,8 @@ impl ReadingProgressRepo {
                 diesel::insert_into(reading_progress)
                     .values(&progress)
                     .on_conflict((
-                        crate::data::models::schema::reading_progress::user_id,
-                        crate::data::models::schema::reading_progress::book_id,
+                        user_id,
+                        book_id,
                     ))
                     .do_update()
                     .set((
@@ -90,7 +88,7 @@ impl ReadingProgressRepo {
         .await
     }
 
-    pub async fn get_by_user(&self, user_id: i32) -> Result<Option<Vec<ReadingProgress>>, Error> {
+    pub async fn get_by_user(&self, uid: i32) -> Result<Option<Vec<ReadingProgress>>, Error> {
         use crate::data::models::schema::reading_progress::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -101,7 +99,7 @@ impl ReadingProgressRepo {
         })?;
 
         match reading_progress
-            .filter(crate::data::models::schema::reading_progress::user_id.eq(user_id))
+            .filter(user_id.eq(uid))
             .load::<ReadingProgress>(&mut conn)
             .await
         {

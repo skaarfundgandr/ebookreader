@@ -20,9 +20,10 @@ impl BookmarkRepo {
 
     pub async fn get_by_user_and_book(
         &self,
-        user_id: i32,
-        book_id: i32,
+        uid: i32,
+        bid: i32,
     ) -> Result<Option<Vec<Bookmarks>>, Error> {
+        use crate::data::models::schema::bookmarks;
         use crate::data::models::schema::bookmarks::dsl::*;
 
         let mut conn = connect_from_pool().await.map_err(|e| {
@@ -33,8 +34,8 @@ impl BookmarkRepo {
         })?;
 
         match bookmarks
-            .filter(crate::data::models::schema::bookmarks::user_id.eq(user_id))
-            .filter(crate::data::models::schema::bookmarks::book_id.eq(book_id))
+            .filter(bookmarks::user_id.eq(uid))
+            .filter(bookmarks::book_id.eq(bid))
             .load::<Bookmarks>(&mut conn)
             .await
         {

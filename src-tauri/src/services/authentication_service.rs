@@ -8,7 +8,6 @@ impl AuthenticationService {
     pub fn new() -> Self {
         AuthenticationService
     }
-    // TODO: Test hashing and verifying passwords
     pub fn hash_password(&self, password: &str) -> Result<String, password_hash::Error> {
         let argon2 = Argon2::default();
 

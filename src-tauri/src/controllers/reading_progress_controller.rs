@@ -4,7 +4,7 @@ use crate::{
     services::token_service::Tokenizer,
 };
 use axum::{
-    extract::{Path, Query},
+    extract::Query,
     http::{HeaderMap, StatusCode},
     response::IntoResponse,
     Json,
@@ -52,7 +52,7 @@ pub async fn update_progress(
         progress_percentage: payload.progress_percentage,
     };
 
-    match repo.upsert(user_id, payload.book_id, progress).await {
+    match repo.upsert(progress).await {
         Ok(_) => (StatusCode::OK, "Progress updated").into_response(),
         Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Database error").into_response(),
     }

@@ -8,6 +8,7 @@ use tokio::sync::MutexGuard;
 use crate::data::{
     database::{connect_from_pool, lock_db},
     models::annotations::{Annotations, NewAnnotation, UpdateAnnotation},
+    models::schema,
     repos::traits::repository::Repository,
 };
 
@@ -20,8 +21,8 @@ impl AnnotationRepo {
 
     pub async fn get_by_user_and_book(
         &self,
-        user_id: i32,
-        book_id: i32,
+        uid: i32,
+        bid: i32,
     ) -> Result<Option<Vec<Annotations>>, Error> {
         use crate::data::models::schema::annotations::dsl::*;
 
@@ -33,8 +34,8 @@ impl AnnotationRepo {
         })?;
 
         match annotations
-            .filter(crate::data::models::schema::annotations::user_id.eq(user_id))
-            .filter(crate::data::models::schema::annotations::book_id.eq(book_id))
+            .filter(schema::annotations::user_id.eq(uid))
+            .filter(schema::annotations::book_id.eq(bid))
             .load::<Annotations>(&mut conn)
             .await
         {
