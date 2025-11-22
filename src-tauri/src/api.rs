@@ -8,6 +8,8 @@ use std::net::SocketAddr;
 use tokio::net::TcpListener;
 
 pub fn start() {
+    // TODO: Add Swagger documentation
+    // TODO: Test all routes
     let api: Router<()> = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
         .route("/register", post(user_controller::create_user))
@@ -16,11 +18,11 @@ pub fn start() {
         .route("/login", post(auth_controller::login))
         .route("/refresh", post(auth_controller::refresh))
         .route("/logout", post(auth_controller::logout))
-        .route("/book/:id/content", get(book_controller::get_book_content))
+        .route("/book/{id}/content", get(book_controller::get_book_content))
         .route("/bookmarks", post(bookmark_controller::create_bookmark))
         .route("/bookmarks", get(bookmark_controller::get_bookmarks))
         .route(
-            "/bookmarks/:id",
+            "/bookmarks/{id}",
             delete(bookmark_controller::delete_bookmark),
         )
         .route(
@@ -29,11 +31,11 @@ pub fn start() {
         )
         .route("/annotations", get(annotation_controller::get_annotations))
         .route(
-            "/annotations/:id",
+            "/annotations/{id}",
             put(annotation_controller::update_annotation),
         )
         .route(
-            "/annotations/:id",
+            "/annotations/{id}",
             delete(annotation_controller::delete_annotation),
         )
         .route(
@@ -55,7 +57,7 @@ pub fn start() {
 
         println!("Starting server on {}", addr);
 
-        match axum::serve(TcpListener::bind(addr).await.unwrap(), api).await {
+        match axum::serve(TcpListener::bind(addr).await.expect("Failed to bind on address"), api).await {
             Ok(_) => (),
             Err(e) => eprintln!("Error starting server: {}", e),
         }

@@ -64,7 +64,7 @@ impl UserRepo {
             Err(e) => Err(e),
         }
     }
-
+    // TODO: Create a more reliable search that returns only one user
     pub async fn search_by_username(
         &self,
         username_query: &str,

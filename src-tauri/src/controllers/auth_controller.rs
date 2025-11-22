@@ -21,17 +21,16 @@ struct TokenResponse {
 pub async fn login(Json(payload): Json<LoginDTO>) -> impl IntoResponse {
     let user_repo = UserRepo::new().await;
     let auth_service = AuthenticationService::new();
-
+    // TODO: Refactor
     match user_repo.search_by_username(&payload.username).await {
         Ok(Some(mut users)) => {
-            if let Some(user) = users.pop() {
+            if let Some(user) = users.pop() { // TODO: Make sure username matches only one user
                 match auth_service.verify_password(&payload.password, &user.password_hash) {
                     Ok(true) => {
                         let tokenizer = token_service::Tokenizer::get_instance().await;
                         match tokenizer.generate_token(user.user_id) {
                             Ok(access_token) => {
                                 let refresh_token = tokenizer.generate_refresh_token();
-
                                 // Store refresh token in database
                                 if let Err(_) = user_repo
                                     .update_refresh_token(user.user_id, &refresh_token)
