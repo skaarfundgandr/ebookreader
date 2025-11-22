@@ -4,6 +4,7 @@ use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation}
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::env;
+use tokio::task;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -20,7 +21,7 @@ impl Tokenizer {
     pub async fn get_instance() -> &'static Tokenizer {
         &TOKENIZER
     }
-
+    // TODO: Test this function
     pub fn generate_token(&self, user_id: i32) -> Result<String, jsonwebtoken::errors::Error> {
         let expiration = Utc::now()
             .checked_add_signed(Duration::seconds(self.expiration_duration))
@@ -37,6 +38,31 @@ impl Tokenizer {
             &claims,
             &EncodingKey::from_secret(self.secret_key.as_ref()),
         )
+    }
+    // TODO: Test this async function
+    pub async fn generate_token_async(&self, user_id: i32) -> Result<String, jsonwebtoken::errors::Error> {
+        let secret_key = self.secret_key.clone();
+        let expiration_duration = self.expiration_duration;
+
+        task::spawn_blocking(move || {
+            let expiration = Utc::now()
+                .checked_add_signed(Duration::seconds(expiration_duration))
+                .expect("valid timestamp")
+                .timestamp() as usize;
+
+            let claims = Claims {
+                sub: user_id,
+                exp: expiration,
+            };
+
+            encode(
+                &Header::default(),
+                &claims,
+                &EncodingKey::from_secret(secret_key.as_ref()),
+            )
+        })
+        .await
+        .unwrap()// Propagate panics from the spawned task
     }
 
     pub fn decode_token(&self, token: &str) -> Result<Claims, jsonwebtoken::errors::Error> {
